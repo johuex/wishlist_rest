@@ -8,7 +8,8 @@ create table "user"
 	surname varchar(50) not null,
 	userpic bytea,
 	about varchar(255),
-	birthday date not null
+	birthday date not null,
+    password_hash varchar(255)
 );
 
 alter table "user" owner to dimas;
