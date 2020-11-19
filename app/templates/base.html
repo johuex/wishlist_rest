@@ -15,6 +15,8 @@
             <a href="{{ url_for('login') }}">Login</a>
             <p>New User? <a href="{{ url_for('register') }}">Click to Register!</a></p>
             {% else %}
+            <!--добавить nickname пользователя-->
+            <a href="{{ url_for('profile') }}"> {{ current_user.nickname }} </a>
             <a href="{{ url_for('logout') }}">Logout</a>
             {% endif %}
 </div>
@@ -22,6 +24,7 @@
         {% with messages = get_flashed_messages() %} <!-- отображение flash-сообщений об ошибках-->
         {% if messages %}
         <ul>
+            <!--на главной странице будут последние 50 добавленных открытых желаний от всех user-->
             {% for message in messages %}
             <li>{{ message }}</li>
             {% endfor %}

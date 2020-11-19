@@ -1,4 +1,4 @@
-create table "user"
+create table "users"
 (
 	"user_ID" integer not null
 		constraint user_pk
@@ -9,10 +9,23 @@ create table "user"
 	userpic bytea,
 	about varchar(255),
 	birthday date not null,
-    password_hash varchar(255)
+    password_hash varchar(255),
+    nickname varchar(50) not null,
+    email varchar(255) not null
 );
+create unique index users_nickname_uindex
+	on users (nickname);
 
-alter table "user" owner to dimas;
+create unique index users_email_uindex
+	on users (email);
+
+create sequence "users_user_ID_seq";
+
+alter table users alter column "user_ID" set default nextval('public."users_user_ID_seq"');
+
+alter sequence "users_user_ID_seq" owned by users."user_ID";
+
+alter table users owner to dimas;
 
 create table friendship
 (
@@ -21,10 +34,10 @@ create table friendship
 	constraint friendship_pk
 		primary key ("user_ID_1", "user_ID_2"),
 	constraint friendship_user_user_id_user_id_fk_1
-		foreign key ("user_ID_1") references "user" ("user_ID")
+		foreign key ("user_ID_1") references users ("user_ID")
 			on update cascade on delete cascade,
 	constraint friendship_user_user_id_user_id_fk_2
-		foreign key ("user_ID_2") references "user" ("user_ID")
+		foreign key ("user_ID_2") references users ("user_ID")
 			on update cascade on delete cascade
 );
 
@@ -35,7 +48,7 @@ create table wishlist
 			primary key,
 	"user_ID" int not null
 		constraint wishlist_user_user_id_fk
-			references "user"
+			references users
 				on update cascade on delete cascade,
 	title varchar(50) not null,
 	about varchar(255),
@@ -60,7 +73,7 @@ create table group_user
 				on update cascade on delete cascade,
 	"user_ID" int not null
 		constraint group_user_user_user_id_fk
-			references "user"
+			references users
 				on update cascade on delete cascade,
 	role int not null,
 	constraint group_user_pk
@@ -78,7 +91,7 @@ create table item
 	picture bytea not null,
 	"giver_ID" int
 		constraint item_user_user_id_fk
-			references "user"
+			references users
 				on update cascade on delete cascade
 );
 

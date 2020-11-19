@@ -1,9 +1,12 @@
 import psycopg2
+from psycopg2.extras import DictCursor
 
 
 def get_connection():
-    conn = psycopg2.connect(host='db-course.cvjxeoubdpa4.eu-central-1.rds.amazonaws.com',
+    conn = psycopg2.connect(dbname='wlist',
                             user='dimas',
-                            password='?',
-                            dbname='wlist')
+                            password='12345',
+                            host='db-course.cvjxeoubdpa4.eu-central-1.rds.amazonaws.com',
+                            cursor_factory=DictCursor
+                            )
     return conn

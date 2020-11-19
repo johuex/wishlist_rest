@@ -4,13 +4,13 @@ from app import app
 from app.forms import LoginForm, RegistrationForm
 from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
+from werkzeug.security import generate_password_hash, check_password_hash
 import connectDB as cn
 from app.models import User
 
 
 @app.route('/')
 @app.route('/index')
-@login_required
 def index():
     """главная страница"""
     user = {'username': 'Эльдар Рязанов'}
@@ -39,10 +39,16 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         conn = cn.get_connection()
-        conn.begin()
-        sql = "SELECT * FROM User WHERE 'username' = %s AND 'password_hash' = %s"
-        conn.execute(sql, form.username, form.password)
-        # TODO сделать все в SQL логике
+        curs = conn.cursor()
+        sql = "SELECT * FROM users WHERE nickname = (%s);"
+        curs.execute(sql, (form.username))
+        result = curs.fetchone()
+        conn.close()
+        if result is None:
+            user = None
+        else:
+            user = User(result['user_ID'], result['phone_number'], result['name'], result['surname'], result['userpic'],
+                        result['about'], result['birthday'], result['password_hash'], result['nickname'])
         #user = User.query.filter_by(username=form.username.data).first()
         if user is None or not user.check_password(form.password.data):
             flash('Invalid username or password')
@@ -68,11 +74,26 @@ def register():
         return redirect(url_for('index'))
     form = RegistrationForm()
     if form.validate_on_submit():
-        # TODO переделать в SQL логику
-        #user = User(username=form.username.data, email=form.email.data)
+        user = User(phone_number=form.phone_number, name=form.username, surname=form.surname, birthday=form.birthday,
+                    nickname=form.nickname, email=form.email)
         user.set_password(form.password.data)
+        conn = cn.get_connection()
+        curs = conn.cursor()
+        sql = "INSERT INTO users (phone_number, user_name, surname, birthday, \
+        password_hash, nickname, email) VALUES ((%s), (%s), (%s), (%s), (%s), ($s), (%s));"
+        curs.execute(sql, (user.phone_number, user.name, user.surname, user.birthday, user.password_hash,
+                           user.nickname, user.email))
+        conn.commit()
+        conn.close()
+        #user = User(username=form.username.data, email=form.email.data)
         #db.session.add(user)
         #db.session.commit()
         flash('Congratulations, you are now a registered user!')
         return redirect(url_for('login'))
     return render_template('register.html', title='Register', form=form)
+
+
+@app.route('/profile')
+@login_required
+def profile():
+    pass
