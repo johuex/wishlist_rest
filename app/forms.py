@@ -2,7 +2,8 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import DataRequired, ValidationError, Email, EqualTo
-from app.models import User
+import phonenumbers
+import datetime
 import connectDB as cn
 
 
@@ -17,7 +18,7 @@ class RegistrationForm(FlaskForm):
     name = StringField('First Name', validators=[DataRequired()])
     surname = StringField('Surname', validators=[DataRequired()])
     nickname = StringField('Nickname', validators=[DataRequired()])
-    phone_number = StringField('Phone number', validators=[DataRequired()])  # TODO кастомный валидатор
+    phone_number = StringField('Phone number', validators=[DataRequired()])
     birthday = StringField('Birthday', validators=[DataRequired()])  # TODO кастомный валидатор
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
@@ -25,35 +26,38 @@ class RegistrationForm(FlaskForm):
         'Repeat Password', validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('Register')
 
-    def validate_username(self, nickname):
-        # TODO переделать в SQL логику
+    def validate_nickname(self, nickname):
         conn = cn.get_connection()
         curs = conn.cursor()
-        sql = "SELECT * FROM 'users' WHERE 'nickname' = (%s);"
-        curs.execute(sql, (nickname.data))
+        sql = "SELECT * FROM users WHERE nickname = %s;"
+        curs.execute(sql, (nickname.data,))
         result = curs.fetchone()
         conn.close()
-        if result is None:
-            user = None
-        else:
-            user = User(result['user_ID'], result['phone_number'], result['name'], result['surname'], result['userpic'],
-                        result['about'], result['birthday'], result['password_hash'], result['nickname'])
         #user = User.query.filter_by(username=username.data).first()
-        if user is not None:
+        if result is not None:
             raise ValidationError('This nickname is occupied.')
+
+    def validate_phone(self, phone_number):
+        try:
+            p = phonenumbers.parse(phone_number.data)
+            if not phonenumbers.is_valid_number(p):
+                raise ValueError()
+        except (phonenumbers.phonenumberutil.NumberParseException, ValueError):
+            raise ValidationError('Invalid phone number')
+
+    def validate_birthday(self, birthday):
+        format_date = "%d/%m/%Y"
+        try:
+            datetime.datetime.strptime(birthday.data, format_date)
+        except ValueError:
+            raise ValidationError('Enter your birthday like 31(day)/1(month)/1999(year)')
 
     def validate_email(self, email):
         conn = cn.get_connection()
         curs = conn.cursor()
-        sql = "SELECT * FROM users WHERE 'email' = (%s);"
-        curs.execute(sql, (email.data))
+        sql = "SELECT * FROM users WHERE email = %s;"
+        curs.execute(sql, (email.data,))
         result = curs.fetchone()
         conn.close()
-        if result is None:
-            user = None
-        else:
-            user = User(result['user_ID'], result['phone_number'], result['name'], result['surname'], result['userpic'],
-                        result['about'], result['birthday'], result['password_hash'], result['nickname'])
-        #user = User.query.filter_by(email=email.data).first()
-        if user is not None:
+        if result is not None:
             raise ValidationError('User with this email is already registered.')

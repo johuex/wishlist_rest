@@ -29,8 +29,8 @@ class User(UserMixin):
 def load_user(user_id):
     conn = cn.get_connection()
     cursor = conn.cursor()
-    sql = "SELECT 'user_ID' FROM users WHERE 'user_ID' = (%d);"
-    result = cursor.execute(sql, int(user_id))
+    sql = "SELECT 'user_ID' FROM users WHERE 'user_ID' = %d;"
+    result = cursor.execute(sql, (int(user_id),))
     cursor.close()
     conn.close()
     return result['user_id']

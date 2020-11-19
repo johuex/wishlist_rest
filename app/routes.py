@@ -4,7 +4,6 @@ from app import app
 from app.forms import LoginForm, RegistrationForm
 from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
-from werkzeug.security import generate_password_hash, check_password_hash
 import connectDB as cn
 from app.models import User
 
@@ -40,8 +39,8 @@ def login():
     if form.validate_on_submit():
         conn = cn.get_connection()
         curs = conn.cursor()
-        sql = "SELECT * FROM users WHERE nickname = (%s);"
-        curs.execute(sql, (form.username))
+        sql = "SELECT * FROM users WHERE nickname = %s;"
+        curs.execute(sql, (form.nickname.data,))
         result = curs.fetchone()
         conn.close()
         if result is None:
@@ -74,13 +73,13 @@ def register():
         return redirect(url_for('index'))
     form = RegistrationForm()
     if form.validate_on_submit():
-        user = User(phone_number=form.phone_number, name=form.username, surname=form.surname, birthday=form.birthday,
+        user = User(phone_number=form.phone_number, name=form.name, surname=form.surname, birthday=form.birthday,
                     nickname=form.nickname, email=form.email)
         user.set_password(form.password.data)
         conn = cn.get_connection()
         curs = conn.cursor()
         sql = "INSERT INTO users (phone_number, user_name, surname, birthday, \
-        password_hash, nickname, email) VALUES ((%s), (%s), (%s), (%s), (%s), ($s), (%s));"
+        password_hash, nickname, email) VALUES (%s, %s, %s, %s, %s, $s, %s);"
         curs.execute(sql, (user.phone_number, user.name, user.surname, user.birthday, user.password_hash,
                            user.nickname, user.email))
         conn.commit()
