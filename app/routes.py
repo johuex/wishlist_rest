@@ -47,7 +47,7 @@ def login():
             user = None
         else:
             user = User(result['user_ID'], result['phone_number'], result['name'], result['surname'], result['userpic'],
-                        result['about'], result['birthday'], result['password_hash'], result['nickname'])
+                        result['about'], result['birthday'], result['password_hash'], result['nickname'], result['email'])
         #user = User.query.filter_by(username=form.username.data).first()
         if user is None or not user.check_password(form.password.data):
             flash('Invalid username or password')
@@ -73,15 +73,15 @@ def register():
         return redirect(url_for('index'))
     form = RegistrationForm()
     if form.validate_on_submit():
-        user = User(phone_number=form.phone_number, name=form.name, surname=form.surname, birthday=form.birthday,
-                    nickname=form.nickname, email=form.email)
+        user = User(phone_number=form.phone_number.data, name=form.name.data, surname=form.surname.data,
+                    birthday=form.birthday.data, nickname=form.nickname.data, email=form.email.data)
         user.set_password(form.password.data)
         conn = cn.get_connection()
         curs = conn.cursor()
         sql = "INSERT INTO users (phone_number, user_name, surname, birthday, \
         password_hash, nickname, email) VALUES (%s, %s, %s, %s, %s, $s, %s);"
-        curs.execute(sql, (user.phone_number, user.name, user.surname, user.birthday, user.password_hash,
-                           user.nickname, user.email))
+        curs.execute(sql, [user.phone_number, user.name, user.surname, user.birthday, user.password_hash,
+                           user.nickname, user.email])
         conn.commit()
         conn.close()
         #user = User(username=form.username.data, email=form.email.data)

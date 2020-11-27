@@ -6,7 +6,9 @@ import connectDB as cn
 
 
 class User(UserMixin):
-    def __init__(self, user_id, phone_number, name, surname, userpic, about, birthday, password_hash, nickname, email):
+    """Класс модели пользователя,повторяющий структуру схемы User из базы данных"""
+    def __init__(self, user_id = None, phone_number = None, name = None, surname = None, userpic = None,
+                 about = None, birthday = None, password_hash = None, nickname = None, email = None):
         self.user_id = user_id
         self.phone_number = phone_number
         self.name = name
@@ -27,6 +29,7 @@ class User(UserMixin):
 
 @login.user_loader
 def load_user(user_id):
+    """пользовательский загрузчик (связываем Flask-Login и БД)"""
     conn = cn.get_connection()
     cursor = conn.cursor()
     sql = "SELECT 'user_ID' FROM users WHERE 'user_ID' = %d;"
