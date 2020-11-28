@@ -28,6 +28,19 @@ class User(UserMixin):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
+    def get_id(self):
+        return self.user_id
 
 
+@login.user_loader
+def load_user(user):
+    # TODO исправить user_ID to id
+    """пользовательский загрузчик (связываем Flask-Login и БД)"""
+    conn = cn.get_connection()
+    cursor = conn.cursor()
+    sql = "SELECT 'user_ID' FROM users WHERE 'user_ID' = %s;"
+    result = cursor.execute(sql, (int(user.get_id()),))
+    cursor.close()
+    conn.close()
+    return result['user_id']
 
