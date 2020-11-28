@@ -32,7 +32,7 @@ def load_user(user_id):
     """пользовательский загрузчик (связываем Flask-Login и БД)"""
     conn = cn.get_connection()
     cursor = conn.cursor()
-    sql = "SELECT 'user_ID' FROM users WHERE 'user_ID' = %d;"
+    sql = "SELECT 'user_ID' FROM users WHERE 'user_ID' = %(int)s;"
     result = cursor.execute(sql, (int(user_id),))
     cursor.close()
     conn.close()

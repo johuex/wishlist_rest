@@ -6,6 +6,7 @@ from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
 import connectDB as cn
 from app.models import User
+import datetime
 
 
 @app.route('/')
@@ -79,9 +80,9 @@ def register():
         conn = cn.get_connection()
         curs = conn.cursor()
         sql = "INSERT INTO users (phone_number, user_name, surname, birthday, \
-        password_hash, nickname, email) VALUES (%s, %s, %s, %s, %s, $s, %s);"
-        curs.execute(sql, [user.phone_number, user.name, user.surname, user.birthday, user.password_hash,
-                           user.nickname, user.email])
+        password_hash, nickname, email) VALUES (%(str)s, %(str)s, %(str)s, %(date)s, %(str)s, $(str)s, %(str)s);"
+        curs.execute(sql, (user.phone_number, user.name, user.surname, datetime.datetime.strptime(user.birthday, '%d/%m/%Y'), user.password_hash,
+                           user.nickname, user.email,))
         conn.commit()
         conn.close()
         #user = User(username=form.username.data, email=form.email.data)
