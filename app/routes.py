@@ -3,6 +3,7 @@ from flask import render_template, flash, redirect, url_for, request
 from app import app
 from app.forms import LoginForm, RegistrationForm, EditProfileForm
 from flask_login import current_user, login_user, logout_user, login_required
+from werkzeug.security import generate_password_hash
 from werkzeug.urls import url_parse
 import connectDB as cn
 from app.models import User
@@ -47,7 +48,7 @@ def login():
         if result is None:
             user = None
         else:
-            user = User(result['user_ID'], result['phone_number'], result['name'], result['surname'], result['userpic'],
+            user = User(result['user_ID'], result['phone_number'], result['user_name'], result['surname'], result['userpic'],
                         result['about'], result['birthday'], result['password_hash'], result['nickname'], result['email'],
                         result["last_seen"])
         #user = User.query.filter_by(username=form.username.data).first()
@@ -81,9 +82,9 @@ def register():
         conn = cn.get_connection()
         curs = conn.cursor()
         sql = "INSERT INTO users (phone_number, user_name, surname, birthday, \
-        password_hash, nickname, email) VALUES (%(str)s, %(str)s, %(str)s, %(date)s, %(str)s, $(str)s, %(str)s);"
-        curs.execute(sql, (user.phone_number, user.name, user.surname, datetime.datetime.strptime(user.birthday, '%d/%m/%Y'), user.password_hash,
-                           user.nickname, user.email))
+        password_hash, nickname, email) VALUES (%s, %s, %s, %s, %s, %s, %s);"
+        curs.execute(sql, (form.phone_number.data, form.name.data, form.surname.data, datetime.datetime.strptime(form.birthday.data, '%d/%m/%Y'),
+                           generate_password_hash(form.password.data), form.nickname.data, form.email.data,))
         conn.commit()
         conn.close()
         #user = User(username=form.username.data, email=form.email.data)
@@ -94,21 +95,9 @@ def register():
     return render_template('register.html', title='Register', form=form)
 
 
-@login.user_loader
-def load_user(user_id):
-    """пользовательский загрузчик (связываем Flask-Login и БД)"""
-    conn = cn.get_connection()
-    cursor = conn.cursor()
-    sql = "SELECT 'user_ID' FROM users WHERE 'user_ID' = %(int)s;"
-    result = cursor.execute(sql, (int(user_id),))
-    cursor.close()
-    conn.close()
-    return result['user_id']
-
-
 @app.before_request
 def before_request():
-    if current_user.is_authenticasted:
+    if not current_user.is_anonymous:
         current_user.last_seen = datetime.utcnow()
         conn = cn.get_connection()
         curs = conn.cursor()

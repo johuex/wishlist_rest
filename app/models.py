@@ -1,6 +1,9 @@
 """модели для данных из БД"""
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
+import connectDB as cn
+
+from app import login
 
 
 class User(UserMixin):
@@ -24,6 +27,7 @@ class User(UserMixin):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
 
 
 

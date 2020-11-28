@@ -1,7 +1,7 @@
 '''модуль для хранения классов веб-форм'''
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField
-from wtforms.validators import DataRequired, ValidationError, Email, EqualTo
+from wtforms.validators import DataRequired, ValidationError, Email, EqualTo, Length
 import phonenumbers
 import datetime
 import connectDB as cn
