@@ -11,7 +11,8 @@ create table "users"
 	birthday date not null,
     password_hash varchar(255),
     nickname varchar(50) not null,
-    email varchar(255) not null
+    email varchar(255) not null,
+    last_seen timestamp
 );
 create unique index users_nickname_uindex
 	on users (nickname);
