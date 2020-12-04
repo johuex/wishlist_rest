@@ -2,7 +2,13 @@
 
 {% block content %}
     <h1>Hi, {{ current_user.nickname }}!</h1>
-    {% for post in posts %}
-    <div><p>{{ post.author.username }} says: <b>{{ post.body }}</b></p></div>
-    {% endfor %}
+    <br>
+    <!--отображение открытых желаний всех пользователей-->
+    {% if wish_item %}
+        {% for wish_item in wish_item %}
+            {% include '_wish.html' %}
+        {% endfor %}
+    {% else %}
+        There are no wishes yet
+    {% endif %}
 {% endblock %}

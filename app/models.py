@@ -12,7 +12,7 @@ class User(UserMixin):
                  about = None, birthday = None, password_hash = None, nickname = None, email = None, last_seen = None):
         self.user_id = user_id
         self.phone_number = phone_number
-        self.name = name
+        self.user_name = name
         self.surname = surname
         self.userpic = userpic
         self.about = about
@@ -34,7 +34,6 @@ class User(UserMixin):
 
 @login.user_loader
 def load_user(user_id):
-    # TODO исправить user_ID to id
     """пользовательский загрузчик (связываем Flask-Login и БД)"""
     conn = cn.get_connection()
     cursor = conn.cursor()

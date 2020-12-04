@@ -15,9 +15,11 @@
             </td>
         </tr>
     </table>
-    {% if wish %}
-        <!--{% include '_wish.html' %}-->
-    {{% else %}}
+    {% if wish_item %}
+        {% for wish_item in wish_item %}
+            {% include '_wish.html' %}
+        {% endfor %}
+    {% else %}
         This user has no wishes yet
     {% endif %}
     <hr>

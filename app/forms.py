@@ -74,13 +74,14 @@ class RegistrationForm(FlaskForm):
 class EditProfileForm(FlaskForm):
     user_name = StringField('Your name', validators=[DataRequired()])
     surname = StringField('Your surname', validators=[DataRequired()])
+    nickname = StringField('Your nickname', validators=[DataRequired()])
     #TODO userpic_form + editing in routes "edit_profile"
     birthday = StringField('Birthday', validators=[DataRequired()])
     email = StringField('Email', validators=[DataRequired(), Email()])
-    oldPassword = PasswordField('Old Password', validators=[DataRequired()])  # TODO валидатор проверки пароля
+    oldPassword = PasswordField('Old Password', validators=[DataRequired()])
     newPassword1 = PasswordField('New Password', validators=[DataRequired()])
     newPassword2 = PasswordField('Repeat Password', validators=[DataRequired(), EqualTo('newPassword1')])
-    phone_number = StringField('Your name', validators=[DataRequired()])
+    phone_number = StringField('Phone_number', validators=[DataRequired()])
     about = TextAreaField('About me', validators=[Length(min=0, max=250)])
     submit = SubmitField('Submit')
 
@@ -107,25 +108,35 @@ class EditProfileForm(FlaskForm):
 
     def validate_birthday(self, birthday):
         """проверка формата введенного ДР"""
+        # TODO что с форматом ДР
         format_date = "%d/%m/%Y"
         try:
             datetime.datetime.strptime(birthday.data, format_date)
         except ValueError:
             raise ValidationError('Enter your birthday like 31(day)/1(month)/1999(year)')
 
-    def validate_oldPassword(self, old_password):
+    def validate_oldPassword(self, oldPassword):
+        """проверка ввода старого пароля"""
+        if current_user.check_password(oldPassword.data):
+            return
+        else:
+            raise ValidationError('Old Password is incorrect')
         conn = cn.get_connection()
         curs = conn.cursor()
         sql = "SELECT password_hash FROM users WHERE nickname = %s;"
         curs.execute(sql, (current_user.nickname,))
         result = curs.fetchone()
         conn.close()
-        if not(result["password_hash"] == generate_password_hash(old_password.data)):
+        hash = generate_password_hash(oldPassword.data)
+        if (result["password_hash"] == hash) is False:
             raise ValidationError('Old Password is incorrect')
 
 
     def validate_email(self, email):
         """проверка существования ящика"""
+        # TODO не проверять, если ящик не изменился
+        if current_user.email == email.data:
+            return
         conn = cn.get_connection()
         curs = conn.cursor()
         sql = "SELECT * FROM users WHERE email = %s;"

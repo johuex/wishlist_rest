@@ -15,22 +15,13 @@ import datetime
 def index():
     """главная страница"""
     """тут будут последние 50 открытых желаний всех пользователей"""
-    user = {'username': 'Эльдар Рязанов'}
-    posts = [
-        {
-            'author': {'username': 'John'},
-            'body': 'Beautiful day in Portland!'
-        },
-        {
-            'author': {'username': 'Susan'},
-            'body': 'The Avengers movie was so cool!'
-        },
-        {
-            'author': {'username': 'Ипполит'},
-            'body': 'Какая гадость эта ваша заливная рыба!!'
-        }
-    ]
-    return render_template('index.html', title='Home Page', posts=posts)
+    conn = cn.get_connection()
+    curs = conn.cursor()
+    sql = "SELECT * FROM item WHERE access_level = %s LIMIT 50;"
+    curs.execute(sql, (True,))
+    result = curs.fetchall()
+    conn.close()
+    return render_template('index.html', wish_item=result)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -121,9 +112,15 @@ def user_profile(nickname):
         user = None
         # TODO вывод об ошибке, что пользователь не найден
     else:
-        user = User(result['user_id'], result['phone_number'], result['name'], result['surname'], result['userpic'],
+        user = User(result['user_id'], result['phone_number'], result['user_name'], result['surname'], result['userpic'],
                     result['about'], result['birthday'], result['password_hash'], result['nickname'], result['email'])
-    return render_template('user_profile.html', user=user)
+        conn = cn.get_connection()
+        curs = conn.cursor()
+        sql = "SELECT * FROM item WHERE access_level = %s;"
+        curs.execute(sql, (True,))
+        result = curs.fetchall()
+        conn.close()
+    return render_template('user_profile.html', user=user, wish_item=result)
 
 
 @app.route('/edit_profile', methods=['GET', 'POST'])
@@ -133,6 +130,7 @@ def edit_profile():
     if form.validate_on_submit():
         # если пользователь изменил информацию и она прошла валидацию, то данные сохраняются и записываются в БД
         current_user.user_name = form.user_name.data
+        current_user.nickname = form.nickname.data
         current_user.surname = form.surname.data
         current_user.birthday = form.birthday.data
         current_user.email = form.email.data
@@ -154,6 +152,7 @@ def edit_profile():
     elif request.method == 'GET':
         # если метод GET, то в формы записываем данные пользователя
         form.user_name.data = current_user.user_name
+        form.nickname = current_user.nickname
         form.surname.data = current_user.surname
         form.birthday.data = current_user.birthday
         form.email.data = current_user.email

@@ -152,5 +152,20 @@ create table item_degree
 		primary key ("item_ID", degree)
 );
 
+create table user_item
+(
+	user_id int not null
+		constraint user_item_users_user_id_fk
+			references users
+				on update cascade on delete cascade,
+	item_id int not null
+		constraint user_item_item_item_id_fk
+			references item
+				on update cascade on delete cascade,
+	constraint user_item_pk
+		primary key (item_id, user_id)
+);
+
+
 
 
