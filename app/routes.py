@@ -80,8 +80,8 @@ def register():
         curs = conn.cursor()
         sql = "INSERT INTO users (phone_number, user_name, surname, birthday, \
         password_hash, nickname, email) VALUES (%s, %s, %s, %s, %s, $s, %s);"
-        curs.execute(sql, [user.phone_number, user.name, user.surname, user.birthday, user.password_hash,
-                           user.nickname, user.email])
+        curs.execute(sql, (user.phone_number, user.name, user.surname, user.birthday, user.password_hash,
+                           user.nickname, user.email,))
         conn.commit()
         conn.close()
         #user = User(username=form.username.data, email=form.email.data)
