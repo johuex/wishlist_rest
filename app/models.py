@@ -33,14 +33,22 @@ class User(UserMixin):
 
 
 @login.user_loader
-def load_user(user):
+def load_user(user_id):
     # TODO исправить user_ID to id
     """пользовательский загрузчик (связываем Flask-Login и БД)"""
     conn = cn.get_connection()
     cursor = conn.cursor()
-    sql = "SELECT 'user_ID' FROM users WHERE 'user_ID' = %s;"
-    result = cursor.execute(sql, (int(user.get_id()),))
+    sql = 'SELECT * FROM users WHERE user_id = %s;'
+    cursor.execute(sql, (int(user_id),))
+    result = cursor.fetchone()
     cursor.close()
     conn.close()
-    return result['user_id']
+    if result is None:
+        user = None
+    else:
+        user = User(result['user_id'], result['phone_number'], result['user_name'], result['surname'],
+                    result['userpic'],
+                    result['about'], result['birthday'], result['password_hash'], result['nickname'], result['email'],
+                    result["last_seen"])
+    return user
 

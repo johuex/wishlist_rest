@@ -15,6 +15,10 @@
             </td>
         </tr>
     </table>
-    {% include 'wish.html' %}
+    {% if wish %}
+        <!--{% include '_wish.html' %}-->
+    {{% else %}}
+        This user has no wishes yet
+    {% endif %}
     <hr>
 {% endblock %}

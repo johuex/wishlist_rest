@@ -14,6 +14,7 @@ import datetime
 @app.route('/index')
 def index():
     """главная страница"""
+    """тут будут последние 50 открытых желаний всех пользователей"""
     user = {'username': 'Эльдар Рязанов'}
     posts = [
         {
@@ -48,7 +49,7 @@ def login():
         if result is None:
             user = None
         else:
-            user = User(result['user_ID'], result['phone_number'], result['user_name'], result['surname'], result['userpic'],
+            user = User(result['user_id'], result['phone_number'], result['user_name'], result['surname'], result['userpic'],
                         result['about'], result['birthday'], result['password_hash'], result['nickname'], result['email'],
                         result["last_seen"])
         #user = User.query.filter_by(username=form.username.data).first()
@@ -82,15 +83,9 @@ def register():
         conn = cn.get_connection()
         curs = conn.cursor()
         sql = "INSERT INTO users (phone_number, user_name, surname, birthday, \
-<<<<<<< HEAD
-        password_hash, nickname, email) VALUES (%s, %s, %s, %s, %s, $s, %s);"
-        curs.execute(sql, (user.phone_number, user.name, user.surname, user.birthday, user.password_hash,
-                           user.nickname, user.email,))
-=======
         password_hash, nickname, email) VALUES (%s, %s, %s, %s, %s, %s, %s);"
         curs.execute(sql, (form.phone_number.data, form.name.data, form.surname.data, datetime.datetime.strptime(form.birthday.data, '%d/%m/%Y'),
                            generate_password_hash(form.password.data), form.nickname.data, form.email.data,))
->>>>>>> 148dcf57676eb655d288c87b1d6f18831f090938
         conn.commit()
         conn.close()
         #user = User(username=form.username.data, email=form.email.data)
@@ -102,14 +97,12 @@ def register():
 
 
 @app.before_request
-def before_request():
-    if not current_user.is_anonymous:
-        current_user.last_seen = datetime.utcnow()
+def before_request():  # выполняется непосредственно перед функцией просмотра
+    if current_user.is_authenticated:
+        current_user.last_seen = datetime.datetime.utcnow()
         conn = cn.get_connection()
         curs = conn.cursor()
-        sql = "UPDATE users " \
-              "SET last_seen = %(datetime)s" \
-              "WHERE 'nickname' = %(str)s;"
+        sql = 'UPDATE users SET last_seen = %s WHERE nickname = %s;'
         curs.execute(sql, (current_user.last_seen, current_user.nickname,))
         conn.commit()
         conn.close()
@@ -120,7 +113,7 @@ def before_request():
 def user_profile(nickname):
     conn = cn.get_connection()
     curs = conn.cursor()
-    sql = "SELECT * FROM users WHERE nickname = %s;"
+    sql = 'SELECT * FROM users WHERE nickname = %s;'
     curs.execute(sql, (nickname,))
     result = curs.fetchone()
     conn.close()
@@ -128,9 +121,9 @@ def user_profile(nickname):
         user = None
         # TODO вывод об ошибке, что пользователь не найден
     else:
-        user = User(result['user_ID'], result['phone_number'], result['name'], result['surname'], result['userpic'],
+        user = User(result['user_id'], result['phone_number'], result['name'], result['surname'], result['userpic'],
                     result['about'], result['birthday'], result['password_hash'], result['nickname'], result['email'])
-    return render_template('user.html', user=user)
+    return render_template('user_profile.html', user=user)
 
 
 @app.route('/edit_profile', methods=['GET', 'POST'])
@@ -148,10 +141,10 @@ def edit_profile():
         #db.session.commit()
         conn = cn.get_connection()
         curs = conn.cursor()
-        sql = "UPDATE users " \
-              "SET user_name = %(str)s, surname = %(str)s, birthday = %(date)s," \
-              "email = %(str)s, phone_number = %(str)s, about = %(str)s, password_hash = %(str)s" \
-              "WHERE 'nickname' = %(str)s;"
+        sql = 'UPDATE users ' \
+              'SET user_name = %(str)s, surname = %(str)s, birthday = %(date)s,' \
+              'email = %(str)s, phone_number = %(str)s, about = %(str)s, password_hash = %(str)s' \
+              'WHERE nickname = %(str)s;'
         curs.execute(sql, (form.user_name.data, form.surname.data, datetime.datetime.strptime(form.birthday.data, '%d/%m/%Y'), form.email.data,
                            form.phone_number.data, form.about.data))
         conn.commit()
