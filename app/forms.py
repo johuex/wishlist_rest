@@ -78,22 +78,20 @@ class EditProfileForm(FlaskForm):
     #TODO userpic_form + editing in routes "edit_profile"
     birthday = StringField('Birthday', validators=[DataRequired()])
     email = StringField('Email', validators=[DataRequired(), Email()])
-    oldPassword = PasswordField('Old Password', validators=[DataRequired()])
-    newPassword1 = PasswordField('New Password', validators=[DataRequired()])
-    newPassword2 = PasswordField('Repeat Password', validators=[DataRequired(), EqualTo('newPassword1')])
     phone_number = StringField('Phone_number', validators=[DataRequired()])
     about = TextAreaField('About me', validators=[Length(min=0, max=250)])
     submit = SubmitField('Submit')
 
     def validate_nickname(self, nickname):
         """проверка nickname на повтор"""
+        if current_user.nickname == nickname.data:
+            return
         conn = cn.get_connection()
         curs = conn.cursor()
         sql = "SELECT * FROM users WHERE nickname = %s;"
         curs.execute(sql, (nickname.data,))
         result = curs.fetchone()
         conn.close()
-        #user = User.query.filter_by(username=username.data).first()
         if result is not None:
             raise ValidationError('This nickname is occupied.')
 
@@ -115,23 +113,6 @@ class EditProfileForm(FlaskForm):
         except ValueError:
             raise ValidationError('Enter your birthday like 31(day)/1(month)/1999(year)')
 
-    def validate_oldPassword(self, oldPassword):
-        """проверка ввода старого пароля"""
-        if current_user.check_password(oldPassword.data):
-            return
-        else:
-            raise ValidationError('Old Password is incorrect')
-        conn = cn.get_connection()
-        curs = conn.cursor()
-        sql = "SELECT password_hash FROM users WHERE nickname = %s;"
-        curs.execute(sql, (current_user.nickname,))
-        result = curs.fetchone()
-        conn.close()
-        hash = generate_password_hash(oldPassword.data)
-        if (result["password_hash"] == hash) is False:
-            raise ValidationError('Old Password is incorrect')
-
-
     def validate_email(self, email):
         """проверка существования ящика"""
         # TODO не проверять, если ящик не изменился
@@ -145,3 +126,17 @@ class EditProfileForm(FlaskForm):
         conn.close()
         if result is not None:
             raise ValidationError('User with this email is already registered.')
+
+
+class ChangePasswordForm(FlaskForm):
+    oldPassword = PasswordField('Old Password', validators=[DataRequired()])
+    newPassword1 = PasswordField('New Password', validators=[DataRequired()])
+    newPassword2 = PasswordField('Repeat Password', validators=[DataRequired(), EqualTo('newPassword1')])
+    submit = SubmitField('Submit')
+
+    def validate_oldPassword(self, oldPassword):
+        """проверка ввода старого пароля"""
+        if current_user.check_password(oldPassword.data):
+            return
+        else:
+            raise ValidationError('Old Password is incorrect')

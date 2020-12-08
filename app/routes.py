@@ -1,7 +1,7 @@
 """логика для web-страниц"""
 from flask import render_template, flash, redirect, url_for, request
 from app import app
-from app.forms import LoginForm, RegistrationForm, EditProfileForm
+from app.forms import LoginForm, RegistrationForm, EditProfileForm, ChangePasswordForm
 from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.security import generate_password_hash
 from werkzeug.urls import url_parse
@@ -136,27 +136,47 @@ def edit_profile():
         current_user.email = form.email.data
         current_user.phone_number = form.phone_number.data
         current_user.about = form.about.data
-        #db.session.commit()
         conn = cn.get_connection()
         curs = conn.cursor()
         sql = 'UPDATE users ' \
-              'SET user_name = %(str)s, surname = %(str)s, birthday = %(date)s,' \
-              'email = %(str)s, phone_number = %(str)s, about = %(str)s, password_hash = %(str)s' \
-              'WHERE nickname = %(str)s;'
+              'SET user_name = %s, surname = %s, birthday = %s,' \
+              'email = %s, phone_number = %s, about = %s ' \
+              'WHERE nickname = %s;'
         curs.execute(sql, (form.user_name.data, form.surname.data, datetime.datetime.strptime(form.birthday.data, '%d/%m/%Y'), form.email.data,
-                           form.phone_number.data, form.about.data))
+                           form.phone_number.data, form.about.data, current_user.nickname))
         conn.commit()
         conn.close()
         flash('Your changes have been saved.')
-        return redirect(url_for('edit_profile'))
+        return redirect(url_for('edit_profile', title='Edit Profile',
+                        form=form))
     elif request.method == 'GET':
         # если метод GET, то в формы записываем данные пользователя
         form.user_name.data = current_user.user_name
-        form.nickname = current_user.nickname
+        form.nickname.data = current_user.nickname
         form.surname.data = current_user.surname
         form.birthday.data = current_user.birthday
         form.email.data = current_user.email
         form.phone_number.data = current_user.phone_number
         form.about.data = current_user.about
     return render_template('edit_profile.html', title='Edit Profile',
+                           form=form)
+
+
+@app.route('/change_password', methods=['GET', 'POST'])
+@login_required
+def change_password():
+    form = ChangePasswordForm()
+    if form.validate_on_submit():
+        current_user.set_password(form.newPassword1.data)
+        conn = cn.get_connection()
+        curs = conn.cursor()
+        sql = 'UPDATE users ' \
+              'SET password_hash = %s ' \
+              'WHERE nickname = %s;'
+        curs.execute(sql, (current_user.password_hash, current_user.nickname,))
+        conn.commit()
+        conn.close()
+        flash('Your changes have been saved.')
+        return redirect(url_for('change_password'))
+    return render_template('change_password.html', title='Changing Password',
                            form=form)

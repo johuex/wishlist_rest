@@ -19,6 +19,13 @@
             {% endfor %}
         </p>
         <p>
+            {{ form.nickname.label }}<br>
+            {{ form.nickname(size=32) }}<br>
+            {% for error in form.nickname.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>
             {{ form.birthday.label }}<br>
             {{ form.birthday(size=32) }}<br>
             {% for error in form.birthday.errors %}
@@ -29,27 +36,6 @@
             {{ form.email.label }}<br>
             {{ form.email(size=32) }}<br>
             {% for error in form.email.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.oldPassword.label }}<br>
-            {{ form.oldPassword(size=32) }}<br>
-            {% for error in form.oldPassword.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.newPassword1.label }}<br>
-            {{ form.newPassword1(size=32) }}<br>
-            {% for error in form.newPassword1.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.newPassword2.label }}<br>
-            {{ form.newPassword2(size=32) }}<br>
-            {% for error in form.newPassword2.errors %}
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>
