@@ -31,6 +31,23 @@ class User(UserMixin):
     def get_id(self):
         return self.user_id
 
+    def send_request(self, user):
+        pass
+
+    def accept_request(self, user):
+        pass
+
+    def reject_request(self, user):
+        pass
+
+    def remove_friend(self, user):
+        pass
+
+    def add_friend(self, user):
+        pass
+
+    def is_friend(self, user):
+        pass
 
 @login.user_loader
 def load_user(user_id):

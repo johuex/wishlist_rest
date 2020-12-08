@@ -130,6 +130,7 @@ def edit_profile():
     if form.validate_on_submit():
         # если пользователь изменил информацию и она прошла валидацию, то данные сохраняются и записываются в БД
         current_user.user_name = form.user_name.data
+        old_nick = current_user.nickname
         current_user.nickname = form.nickname.data
         current_user.surname = form.surname.data
         current_user.birthday = form.birthday.data
@@ -140,10 +141,10 @@ def edit_profile():
         curs = conn.cursor()
         sql = 'UPDATE users ' \
               'SET user_name = %s, surname = %s, birthday = %s,' \
-              'email = %s, phone_number = %s, about = %s ' \
+              'email = %s, phone_number = %s, about = %s, nickname = %s ' \
               'WHERE nickname = %s;'
         curs.execute(sql, (form.user_name.data, form.surname.data, datetime.datetime.strptime(form.birthday.data, '%d/%m/%Y'), form.email.data,
-                           form.phone_number.data, form.about.data, current_user.nickname))
+                           form.phone_number.data, form.about.data, form.nickname.data, old_nick,))
         conn.commit()
         conn.close()
         flash('Your changes have been saved.')
@@ -180,3 +181,14 @@ def change_password():
         return redirect(url_for('change_password'))
     return render_template('change_password.html', title='Changing Password',
                            form=form)
+
+
+@app.errorhandler(404)  # рендер об ошибке 404
+def not_found_error(error):
+    return render_template('404.html'), 404
+
+
+@app.errorhandler(500)  # рендер об ошибке 500
+def internal_error(error):
+    db.session.rollback()
+    return render_template('500.html'), 500
