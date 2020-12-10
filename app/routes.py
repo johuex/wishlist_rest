@@ -195,5 +195,49 @@ def not_found_error(error):
 
 @app.errorhandler(500)  # рендер об ошибке 500
 def internal_error(error):
-    db.session.rollback()
+    # db.session.rollback() - ???
     return render_template('500.html'), 500
+
+
+@app.route('/friend_request/<nickname>')
+@login_required
+def add_friend(nickname):
+    #user = User.query.filter_by(username=username).first() # кому посылаем запрос???
+    conn = cn.get_connection()
+    curs = conn.cursor()
+    sql = "SELECT user_id FROM users WHERE nickname = %s;"
+    curs.execute(sql, (nickname,))
+    result = curs.fetchone()
+    conn.close()
+    if result is None: # если пользователь не найден
+        flash('User {} not found.'.format(nickname))
+        return redirect(url_for('index'))
+    '''if user == current_user: # самому себе тоже не отправить запрос в друзья
+        flash('You cannot follow yourself!')
+        return redirect(url_for('user', username=username))'''
+    current_user.send_request(result['user_id'])
+    #db.session.commit()
+    flash('You have send friend request to {}!'.format(nickname))
+    return redirect(url_for('user_profile', nickname=nickname))
+
+
+@app.route('/delete_friend/<nickname>')
+@login_required
+def delete_friend(nickname):
+    #user = User.query.filter_by(username=username).first()
+    conn = cn.get_connection()
+    curs = conn.cursor()
+    sql = "SELECT user_id FROM users WHERE nickname = %s;"
+    curs.execute(sql, (nickname,))
+    result = curs.fetchone()
+    conn.close()
+    if result is None:
+        flash('User {} not found.'.format(nickname))
+        return redirect(url_for('index'))
+    '''if user == current_user:
+        flash('You cannot unfollow yourself!')
+        return redirect(url_for('user', username=username))'''
+    current_user.remove_friend(result['user_id'])
+    #db.session.commit()
+    flash('You and {} are not friends .'.format(nickname))
+    return redirect(url_for('user_profile', nickname=nickname))

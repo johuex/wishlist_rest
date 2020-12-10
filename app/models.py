@@ -37,26 +37,78 @@ class User(UserMixin):
     def get_id(self):
         return self.user_id
 
-    def send_request(self, user):
-        """отправить запрос на дружбу"""
-        pass
+    def send_request(self, user_to):
+        """отправить запрос на дружбу
+        на входе id пользователей"""
+        conn = cn.get_connection()
+        curs = conn.cursor()
+        sql = 'INSERT INTO friends_requests VALUES (%s, %s);'
+        curs.execute(sql, (self.user_id, user_to,))
+        conn.commit()
+        conn.close()
 
-    def accept_request(self, user):
+    def accept_request(self, user_2):
         """принять запрос на дружбу"""
-        pass
+        conn = cn.get_connection()
+        curs = conn.cursor()
+        # сначала удаляем запрос на дружбу
+        sql = 'DELETE FROM friends_requests WHERE (user_id_from = %s and user_id_to = %s) \
+                OR (user_id_from = %s and user_id_to = %s);'
+        curs.execute(sql, (self.user_id, user_2, user_2, self.user_id,))
+        # затем записываем дружбу между пользователями
+        sql = 'INSERT INTO friendship VALUES (%s, %s);'
+        curs.execute(sql, (self.user_id, user_2,))
+        conn.commit()
+        conn.close()
 
-    def reject_request(self, user):
+    def reject_request(self, user_2):
         """отклонить запрос на дружбу"""
-        pass
+        conn = cn.get_connection()
+        curs = conn.cursor()
+        # удаляем запрос на дружбу
+        sql = 'DELETE FROM friends_requests WHERE (user_id_from = %s and user_id_to = %s) \
+                        OR (user_id_from = %s and user_id_to = %s);'
+        curs.execute(sql, (self.user_id, user_2, user_2, self.user_id,))
+        conn.commit()
+        conn.close()
 
-    def remove_friend(self, user):
-        """удалить из друзей"""
-        pass
+    def remove_friend(self, user_2):
+        """удалить из друзей
+        на входе id пользователей"""
+        conn = cn.get_connection()
+        curs = conn.cursor()
+        sql = 'DELETE FROM friendship WHERE (user_id_1 = %s and user_id_2 = %s) or (user_id_2 = %s and user_id_1 = %s);'
+        curs.execute(sql, (self.user_id, user_2, user_2, self.user_id,))
+        conn.commit()
+        conn.close()
 
-    def is_friend(self, user):
+    def is_friend(self, user_2):
         """проверка на дружбу"""
-        pass
+        conn = cn.get_connection()
+        curs = conn.cursor()
+        sql = 'SELECT COUNT() FROM friendship WHERE (user_id_1 = %s and user_id_2 = %s) \
+                        OR (user_id_1 = %s and user_id_2 = %s);'
+        curs.execute(sql, (self.user_id, user_2, user_2, self.user_id,))
+        result = curs.fetchone()
+        conn.close()
+        if result == 1:
+            return True
+        else:
+            return False
 
+
+    def is_request(self, user_2):
+        """проверка на запрос дружбы"""
+        conn = cn.get_connection()
+        curs = conn.cursor()
+        sql = 'SELECT COUNT() FROM friends_requests WHERE (user_id_from = %s and user_id_to = %s);'
+        curs.execute(sql, (self.user_id, user_2,))
+        result = curs.fetchone()
+        conn.close()
+        if result == 1:
+            return True
+        else:
+            return False
 
 @login.user_loader
 def load_user(user_id):
