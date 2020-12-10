@@ -5,6 +5,7 @@
         <tr valign="top">
             <td><img src="{{ user.userpic }}"></td>
             <td>
+                {% if user%}
                 <h1>User: {{ user.nickname }}</h1>
                 {% if user.about %}<p>{{ user.about }}</p>{% endif %}
                 {% if user.last_seen %}<p>Last seen on: {{ user.last_seen }}</p>{% endif %}
@@ -26,6 +27,7 @@
                         {% endif %}
                     {% endif %}
 
+                {% endif %}
                 {% endif %}
             </td>
         </tr>
