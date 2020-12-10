@@ -22,32 +22,41 @@ class User(UserMixin):
         self.email = email
         self.last_seen = last_seen
 
+    def friends_wishes(self):
+        """отображение последних желаний и списков друзей"""
+        pass
+
     def set_password(self, password):
+        """установка хеша пароля"""
         self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
+        """проверка хеша пароля"""
         return check_password_hash(self.password_hash, password)
 
     def get_id(self):
         return self.user_id
 
     def send_request(self, user):
+        """отправить запрос на дружбу"""
         pass
 
     def accept_request(self, user):
+        """принять запрос на дружбу"""
         pass
 
     def reject_request(self, user):
+        """отклонить запрос на дружбу"""
         pass
 
     def remove_friend(self, user):
-        pass
-
-    def add_friend(self, user):
+        """удалить из друзей"""
         pass
 
     def is_friend(self, user):
+        """проверка на дружбу"""
         pass
+
 
 @login.user_loader
 def load_user(user_id):
@@ -68,3 +77,12 @@ def load_user(user_id):
                     result["last_seen"])
     return user
 
+
+class WishItem():
+    """модель желания"""
+    pass
+
+
+class WishList():
+    """модель списка желаний"""
+    pass

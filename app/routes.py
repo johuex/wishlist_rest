@@ -8,6 +8,10 @@ from werkzeug.urls import url_parse
 import connectDB as cn
 from app.models import User
 import datetime
+from PIL import Image
+import psycopg2
+from io import BytesIO
+
 
 
 @app.route('/')
@@ -68,15 +72,16 @@ def register():
         return redirect(url_for('index'))
     form = RegistrationForm()
     if form.validate_on_submit():
+        img = open('userpic.jpg', 'rb').read()
         user = User(phone_number=form.phone_number.data, name=form.name.data, surname=form.surname.data,
                     birthday=form.birthday.data, nickname=form.nickname.data, email=form.email.data)
         user.set_password(form.password.data)
         conn = cn.get_connection()
         curs = conn.cursor()
         sql = "INSERT INTO users (phone_number, user_name, surname, birthday, \
-        password_hash, nickname, email) VALUES (%s, %s, %s, %s, %s, %s, %s);"
+        password_hash, nickname, email, userpic) VALUES (%s, %s, %s, %s, %s, %s, %s, %s);"
         curs.execute(sql, (form.phone_number.data, form.name.data, form.surname.data, datetime.datetime.strptime(form.birthday.data, '%d/%m/%Y'),
-                           generate_password_hash(form.password.data), form.nickname.data, form.email.data,))
+                           generate_password_hash(form.password.data), form.nickname.data, form.email.data, psycopg2.Binary(img),))
         conn.commit()
         conn.close()
         #user = User(username=form.username.data, email=form.email.data)
@@ -112,7 +117,7 @@ def user_profile(nickname):
         user = None
         # TODO вывод об ошибке, что пользователь не найден
     else:
-        user = User(result['user_id'], result['phone_number'], result['user_name'], result['surname'], result['userpic'],
+        user = User(result['user_id'], result['phone_number'], result['user_name'], result['surname'], bytes(result['userpic']),
                     result['about'], result['birthday'], result['password_hash'], result['nickname'], result['email'])
         conn = cn.get_connection()
         curs = conn.cursor()

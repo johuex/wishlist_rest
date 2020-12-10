@@ -42,6 +42,22 @@ create table friendship
 			on update cascade on delete cascade
 );
 
+create table friends_requests
+(
+	user_id_from int not null
+		constraint friends_requests_users_user_id_fk
+			references users
+				on update cascade on delete cascade,
+	user_id_to int not null
+		constraint friends_requests_users_user_id_fk_2
+			references users
+				on update cascade on delete cascade,
+	constraint friends_requests_pk
+		primary key (user_id_from, user_id_to)
+);
+
+
+
 create table wishlist
 (
 	list_id int not null
