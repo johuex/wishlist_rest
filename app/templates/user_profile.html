@@ -22,7 +22,7 @@
                         <p><a href="{{ url_for('cancel_request', nickname = user.nickname) }}">Cancel request for friendship</a></p>
                         {% else %}
                         <!--запрос на дружбу еще не отправлен-->
-                        <p><a href="{{ url_for('request_friend', nickname = user.nickname) }}">Send request for friendship</a></p>
+                        <p><a href="{{ url_for('add_friend', nickname = user.nickname) }}">Send request for friendship</a></p>
                         {% endif %}
                     {% endif %}
 
@@ -30,6 +30,7 @@
             </td>
         </tr>
     </table>
+    <hr>
     {% if wish_item %}
         {% for wish_item in wish_item %}
             {% include '_wish.html' %}

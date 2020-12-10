@@ -8,17 +8,14 @@ from werkzeug.urls import url_parse
 import connectDB as cn
 from app.models import User
 import datetime
-from PIL import Image
 import psycopg2
-from io import BytesIO
-
 
 
 @app.route('/')
 @app.route('/index')
 def index():
     """главная страница"""
-    """тут будут последние 50 открытых желаний всех пользователей"""
+    '''тут будут последние 50 открытых желаний всех пользователей'''
     conn = cn.get_connection()
     curs = conn.cursor()
     sql = "SELECT * FROM item WHERE access_level = %s LIMIT 50;"
@@ -68,6 +65,7 @@ def logout():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    """функция регистрации"""
     if current_user.is_authenticated:
         return redirect(url_for('index'))
     form = RegistrationForm()
@@ -84,9 +82,6 @@ def register():
                            generate_password_hash(form.password.data), form.nickname.data, form.email.data, psycopg2.Binary(img),))
         conn.commit()
         conn.close()
-        #user = User(username=form.username.data, email=form.email.data)
-        #db.session.add(user)
-        #db.session.commit()
         flash('Congratulations, you are now a registered user!')
         return redirect(url_for('login'))
     return render_template('register.html', title='Register', form=form)
@@ -94,6 +89,7 @@ def register():
 
 @app.before_request
 def before_request():  # выполняется непосредственно перед функцией просмотра
+    """при каждом запросе авторизованного пользователя записывается его последнее время активности"""
     if current_user.is_authenticated:
         current_user.last_seen = datetime.datetime.utcnow()
         conn = cn.get_connection()
@@ -107,6 +103,7 @@ def before_request():  # выполняется непосредственно �
 @app.route('/<nickname>')
 @login_required
 def user_profile(nickname):
+    """показ профиля пользователя"""
     conn = cn.get_connection()
     curs = conn.cursor()
     sql = 'SELECT * FROM users WHERE nickname = %s;'
@@ -115,9 +112,10 @@ def user_profile(nickname):
     conn.close()
     if result is None:
         user = None
-        # TODO вывод об ошибке, что пользователь не найден
+        flash('User {} not found.'.format(nickname))
+        return redirect(url_for('index'))
     else:
-        user = User(result['user_id'], result['phone_number'], result['user_name'], result['surname'], bytes(result['userpic']),
+        user = User(result['user_id'], result['phone_number'], result['user_name'], result['surname'], result['userpic'],
                     result['about'], result['birthday'], result['password_hash'], result['nickname'], result['email'])
         conn = cn.get_connection()
         curs = conn.cursor()
@@ -131,6 +129,7 @@ def user_profile(nickname):
 @app.route('/edit_profile', methods=['GET', 'POST'])
 @login_required
 def edit_profile():
+    """изменение данных профиля"""
     form = EditProfileForm()
     if form.validate_on_submit():
         # если пользователь изменил информацию и она прошла валидацию, то данные сохраняются и записываются в БД
@@ -171,6 +170,7 @@ def edit_profile():
 @app.route('/change_password', methods=['GET', 'POST'])
 @login_required
 def change_password():
+    """смена пароля"""
     form = ChangePasswordForm()
     if form.validate_on_submit():
         current_user.set_password(form.newPassword1.data)
@@ -190,19 +190,21 @@ def change_password():
 
 @app.errorhandler(404)  # рендер об ошибке 404
 def not_found_error(error):
+    """вывод ошибки 404"""
     return render_template('404.html'), 404
 
 
 @app.errorhandler(500)  # рендер об ошибке 500
 def internal_error(error):
+    """вывод ошибки 500"""
     # db.session.rollback() - ???
     return render_template('500.html'), 500
 
 
-@app.route('/friend_request/<nickname>')
+@app.route('/add_request/<nickname>')
 @login_required
 def add_friend(nickname):
-    #user = User.query.filter_by(username=username).first() # кому посылаем запрос???
+    """добавить пользователя в друзья"""
     conn = cn.get_connection()
     curs = conn.cursor()
     sql = "SELECT user_id FROM users WHERE nickname = %s;"
@@ -212,11 +214,7 @@ def add_friend(nickname):
     if result is None: # если пользователь не найден
         flash('User {} not found.'.format(nickname))
         return redirect(url_for('index'))
-    '''if user == current_user: # самому себе тоже не отправить запрос в друзья
-        flash('You cannot follow yourself!')
-        return redirect(url_for('user', username=username))'''
     current_user.send_request(result['user_id'])
-    #db.session.commit()
     flash('You have send friend request to {}!'.format(nickname))
     return redirect(url_for('user_profile', nickname=nickname))
 
@@ -224,7 +222,7 @@ def add_friend(nickname):
 @app.route('/delete_friend/<nickname>')
 @login_required
 def delete_friend(nickname):
-    #user = User.query.filter_by(username=username).first()
+    """удалить пользователя из друзей"""
     conn = cn.get_connection()
     curs = conn.cursor()
     sql = "SELECT user_id FROM users WHERE nickname = %s;"
@@ -234,10 +232,25 @@ def delete_friend(nickname):
     if result is None:
         flash('User {} not found.'.format(nickname))
         return redirect(url_for('index'))
-    '''if user == current_user:
-        flash('You cannot unfollow yourself!')
-        return redirect(url_for('user', username=username))'''
     current_user.remove_friend(result['user_id'])
-    #db.session.commit()
     flash('You and {} are not friends .'.format(nickname))
     return redirect(url_for('user_profile', nickname=nickname))
+
+
+@app.route('/cancel_request/<nickname>')
+@login_required
+def cancel_request(nickname):
+    """отменить запрос в друзья"""
+    conn = cn.get_connection()
+    curs = conn.cursor()
+    sql = "SELECT user_id FROM users WHERE nickname = %s;"
+    curs.execute(sql, (nickname,))
+    result = curs.fetchone()
+    conn.close()
+    if result is None:
+        flash('User {} not found.'.format(nickname))
+        return redirect(url_for('index'))
+    current_user.reject_request(result['user_id'])
+    flash('You canceled friend request to {} .'.format(nickname))
+    return redirect(url_for('user_profile', nickname=nickname))
+

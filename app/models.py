@@ -62,7 +62,7 @@ class User(UserMixin):
         conn.close()
 
     def reject_request(self, user_2):
-        """отклонить запрос на дружбу"""
+        """отклонить запрос на дружбу / отменить запрос на дружбу"""
         conn = cn.get_connection()
         curs = conn.cursor()
         # удаляем запрос на дружбу
@@ -86,29 +86,37 @@ class User(UserMixin):
         """проверка на дружбу"""
         conn = cn.get_connection()
         curs = conn.cursor()
-        sql = 'SELECT COUNT() FROM friendship WHERE (user_id_1 = %s and user_id_2 = %s) \
-                        OR (user_id_1 = %s and user_id_2 = %s);'
-        curs.execute(sql, (self.user_id, user_2, user_2, self.user_id,))
+        argum = [self.user_id, user_2, user_2, self.user_id]
+        sql = 'SELECT COUNT(*) FROM friendship WHERE (user_id_1 = %s and user_id_2 = %s) OR (user_id_1 = %s and user_id_2 = %s);'
+        curs.execute(sql, argum)
         result = curs.fetchone()
         conn.close()
-        if result == 1:
-            return True
-        else:
-            return False
-
+        return result[0] == 1
+    # TODO почему выкидывает ошибку, если на других html
 
     def is_request(self, user_2):
         """проверка на запрос дружбы"""
         conn = cn.get_connection()
         curs = conn.cursor()
-        sql = 'SELECT COUNT() FROM friends_requests WHERE (user_id_from = %s and user_id_to = %s);'
+        sql = 'SELECT COUNT(*) FROM friends_requests WHERE (user_id_from = %s and user_id_to = %s);'
         curs.execute(sql, (self.user_id, user_2,))
         result = curs.fetchone()
         conn.close()
-        if result == 1:
-            return True
-        else:
-            return False
+        return result[0] == 1
+
+    def friends_news(self):
+        """желания и списки, добавленные недавно друзьями пользователя (не для /index)"""
+        pass
+
+    def friends_list(self):
+        """показ всех друзей пользователя"""
+        pass
+
+    def requests_list(self):
+        """показ всех запросов на дружбу пользователю"""
+        pass
+    # TODO функции показа другей и запросов на друзья
+    # TODO подсчет кол-ва друзей ???
 
 @login.user_loader
 def load_user(user_id):
@@ -133,19 +141,24 @@ def load_user(user_id):
 class WishList:
     """модель списка желания"""
     def __init__(self, list_id=None, user_id=None, title=None, about=None, access_level=None):
-        list_id = list_id
-        user_id = user_id
-        title = title
-        about = about
-        access_level = access_level
+        self.list_id = list_id
+        self.user_id = user_id
+        self.title = title
+        self.about = about
+        self.access_level = access_level
 
 
 class WishItem:
     """модель желания"""
     def __init__(self, item_id=None, title=None, about=None, access_level=None, picture=None, giver_id=None):
-        item_id = item_id
-        title = title
-        about = about
-        access_level = access_level
-        picture = picture
-        giver_id = giver_id
+        self.item_id = item_id
+        self.title = title
+        self.about = about
+        self.access_level = access_level
+        self.picture = picture
+        self.giver_id = giver_id
+
+
+class GroupList:
+    """модель групповых списков"""
+    pass

@@ -72,6 +72,7 @@ class RegistrationForm(FlaskForm):
 
 
 class EditProfileForm(FlaskForm):
+    """форма для изменения данных в профиле"""
     user_name = StringField('Your name', validators=[DataRequired()])
     surname = StringField('Your surname', validators=[DataRequired()])
     nickname = StringField('Your nickname', validators=[DataRequired()])
@@ -115,7 +116,6 @@ class EditProfileForm(FlaskForm):
 
     def validate_email(self, email):
         """проверка существования ящика"""
-        # TODO не проверять, если ящик не изменился
         if current_user.email == email.data:
             return
         conn = cn.get_connection()
@@ -129,6 +129,7 @@ class EditProfileForm(FlaskForm):
 
 
 class ChangePasswordForm(FlaskForm):
+    """изменение пароля"""
     oldPassword = PasswordField('Old Password', validators=[DataRequired()])
     newPassword1 = PasswordField('New Password', validators=[DataRequired()])
     newPassword2 = PasswordField('Repeat Password', validators=[DataRequired(), EqualTo('newPassword1')])
@@ -140,3 +141,13 @@ class ChangePasswordForm(FlaskForm):
             return
         else:
             raise ValidationError('Old Password is incorrect')
+
+
+class AddWishItem(FlaskForm):
+    """форма добавления желания"""
+    pass
+
+
+class AddWishList(FlaskForm):
+    """форма добавления списка желаний"""
+    pass
