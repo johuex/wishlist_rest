@@ -78,11 +78,22 @@ def load_user(user_id):
     return user
 
 
-class WishItem():
+class WishList:
+    """модель списка желания"""
+    def __init__(self, list_id=None, user_id=None, title=None, about=None, access_level=None):
+        list_id = list_id
+        user_id = user_id
+        title = title
+        about = about
+        access_level = access_level
+
+
+class WishItem:
     """модель желания"""
-    pass
-
-
-class WishList():
-    """модель списка желаний"""
-    pass
+    def __init__(self, item_id=None, title=None, about=None, access_level=None, picture=None, giver_id=None):
+        item_id = item_id
+        title = title
+        about = about
+        access_level = access_level
+        picture = picture
+        giver_id = giver_id
