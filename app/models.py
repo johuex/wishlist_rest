@@ -92,7 +92,6 @@ class User(UserMixin):
         result = curs.fetchone()
         conn.close()
         return result[0] == 1
-    # TODO почему выкидывает ошибку, если на других html
 
     def is_request(self, user_2):
         """проверка на запрос дружбы"""

@@ -145,9 +145,16 @@ class ChangePasswordForm(FlaskForm):
 
 class AddWishItem(FlaskForm):
     """форма добавления желания"""
-    pass
+    title = StringField()
+    about = TextAreaField()
+    access_level = BooleanField()
+    # TODO форма для picture
+
 
 
 class AddWishList(FlaskForm):
     """форма добавления списка желаний"""
+    title = StringField()
+    about = TextAreaField()
+    access_level = BooleanField()
     pass
