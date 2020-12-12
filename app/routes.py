@@ -44,7 +44,6 @@ def login():
             user = User(result['user_id'], result['phone_number'], result['user_name'], result['surname'], result['userpic'],
                         result['about'], result['birthday'], result['password_hash'], result['nickname'], result['email'],
                         result["last_seen"])
-        #user = User.query.filter_by(username=form.username.data).first()
         if user is None or not user.check_password(form.password.data):
             flash('Invalid username or password')
             return redirect(url_for('login'))
@@ -254,3 +253,42 @@ def cancel_request(nickname):
     flash('You canceled friend request to {} .'.format(nickname))
     return redirect(url_for('user_profile', nickname=nickname))
 
+
+@app.route('/news')
+@login_required
+def news():
+    """новости от друзей"""
+    # TODO
+    conn = cn.get_connection()
+    curs = conn.cursor()
+    sql = ""
+    curs.execute(sql, (current_user.nickname,))
+    result = curs.fetchone()
+    conn.close()
+    if result is None:
+        flash('Your friends have not added wishes yet')
+        return redirect(url_for('news'))
+    return redirect(url_for('news'))
+
+
+@app.route('/friends')
+def friends():
+    """отображение друзей пользователя"""
+    pass
+
+
+@app.route('/wishes')
+def all_item():
+    """отображение всех желаний и списков пользователя"""
+    pass
+
+
+@app.route('/presents')
+def presents(item_id):
+    """отображение желаний, который будет исполнять пользователь"""
+    pass
+
+@app.route('/<item_id>')
+def wish_item(item_id):
+    """отображение конкретного желания"""
+    pass

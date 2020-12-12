@@ -1,9 +1,11 @@
 <!--sub-template for wish-->
 <!--TODO отображения желания в формате - username, wishpic, title-->
 <table>
-    <tr valign="top"> <!--строка из ячеек-->
-        <td><img src="{{ wish_item.picture }}"></td> <!--ячейка таблицы-->
-        <td><p><a href="{{ url_for('????') }}"> {{ wish_item.title}} </a></p></td> <!--TODO ссылка на wish_item-->
-
+    <tr valign="top">
+        <td bgcolor="#a9a9a9">{{ user.username }}</td>
+    </tr>
+    <tr valign="top">
+        <td bgcolor="#a9a9a9"><img src="{{ wish_item.picture }}"></td> <!--картинка-->
+        <td bgcolor="#a9a9a9"><p><a href="{{ url_for('????') }}"> {{ wish_item.title}} </a></p></td> <!--заголовок-->
     </tr>
 </table>
