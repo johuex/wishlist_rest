@@ -258,37 +258,83 @@ def cancel_request(nickname):
 @login_required
 def news():
     """новости от друзей"""
-    # TODO
     conn = cn.get_connection()
     curs = conn.cursor()
-    sql = ""
-    curs.execute(sql, (current_user.nickname,))
-    result = curs.fetchone()
+    sql = 'SELECT list_id, title, "list" type ' \
+          'FROM wishlist ' \
+          'WHERE access level = %s and user_id IN' \
+          '     (SELECT user_id_2' \
+          '      FROM friendship' \
+          '      WHERE user_id_1 = %s) ' \
+          'UNION ' \
+          'SELECT item_id, title, "wish" type ' \
+          'FROM item INNER JOIN user_item' \
+          'WHERE access level = %s and user_id IN' \
+          '     (SELECT user_id_2 ' \
+          '      FROM friendship ' \
+          '      WHERE user_id_1 = %s);'
+    curs.execute(sql, (True, current_user.nickname, True, current_user.nickname,))
+    result = curs.fetchall()
     conn.close()
-    if result is None:
-        flash('Your friends have not added wishes yet')
-        return redirect(url_for('news'))
-    return redirect(url_for('news'))
+    return render_template('friends_news.html', wishes=result)
+
 
 
 @app.route('/friends')
 def friends():
     """отображение друзей пользователя"""
-    pass
+    conn = cn.get_connection()
+    curs = conn.cursor()
+    sql = 'SELECT user_id, name, surname, userpic ' \
+          'FROM friendship ' \
+          'WHERE user_id_1 = %s);'
+    curs.execute(sql, (current_user.nickname,))
+    result = curs.fetchall()
+    conn.close()
+    return render_template('friendlist.html', friends=result)
 
 
 @app.route('/wishes')
 def all_item():
     """отображение всех желаний и списков пользователя"""
-    pass
+    conn = cn.get_connection()
+    curs = conn.cursor()
+    sql = 'SELECT list_id, title, "list" type ' \
+          'FROM wishlist ' \
+          'WHERE user_id = %s) ' \
+          'UNION ' \
+          'SELECT item_id, title, "wish" type ' \
+          'FROM item INNER JOIN user_item ' \
+          'WHERE user_id = %s);'
+    curs.execute(sql, (current_user.nickname, current_user.nickname,))
+    result = curs.fetchall()
+    conn.close()
+    return render_template('friends_news.html', wishes=result)
 
 
 @app.route('/presents')
 def presents(item_id):
     """отображение желаний, который будет исполнять пользователь"""
-    pass
+    conn = cn.get_connection()
+    curs = conn.cursor()
+    sql = 'SELECT item_id, title ' \
+          'FROM item ' \
+          'WHERE giver_id = %s);'
+    curs.execute(sql, (current_user.nickname,))
+    result = curs.fetchall()
+    conn.close()
+    return render_template('my_presents.html', presents=result)
+
 
 @app.route('/<item_id>')
 def wish_item(item_id):
     """отображение конкретного желания"""
-    pass
+    conn = cn.get_connection()
+    curs = conn.cursor()
+    sql = 'SELECT * ' \
+          'FROM item ' \
+          'WHERE item_id = %s);'
+    curs.execute(sql, (item_id,))
+    result = curs.fetchall()
+    conn.close()
+    return render_template('fullwish.html', wish=result)

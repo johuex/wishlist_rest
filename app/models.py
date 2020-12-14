@@ -52,12 +52,11 @@ class User(UserMixin):
         conn = cn.get_connection()
         curs = conn.cursor()
         # сначала удаляем запрос на дружбу
-        sql = 'DELETE FROM friends_requests WHERE (user_id_from = %s and user_id_to = %s) \
-                OR (user_id_from = %s and user_id_to = %s);'
-        curs.execute(sql, (self.user_id, user_2, user_2, self.user_id,))
+        sql = 'DELETE FROM friends_requests WHERE (user_id_from = %s and user_id_to = %s);'
+        curs.execute(sql, (user_2, self.user_id,))
         # затем записываем дружбу между пользователями
-        sql = 'INSERT INTO friendship VALUES (%s, %s);'
-        curs.execute(sql, (self.user_id, user_2,))
+        sql = 'INSERT INTO friendship VALUES (%s, %s), (%s, %s);'
+        curs.execute(sql, (self.user_id, user_2, user_2, self.user_id,))
         conn.commit()
         conn.close()
 
@@ -74,7 +73,7 @@ class User(UserMixin):
 
     def remove_friend(self, user_2):
         """удалить из друзей
-        на входе id пользователей"""
+        на входе id друга"""
         conn = cn.get_connection()
         curs = conn.cursor()
         sql = 'DELETE FROM friendship WHERE (user_id_1 = %s and user_id_2 = %s) or (user_id_2 = %s and user_id_1 = %s);'
@@ -86,8 +85,8 @@ class User(UserMixin):
         """проверка на дружбу"""
         conn = cn.get_connection()
         curs = conn.cursor()
-        argum = [self.user_id, user_2, user_2, self.user_id]
-        sql = 'SELECT COUNT(*) FROM friendship WHERE (user_id_1 = %s and user_id_2 = %s) OR (user_id_1 = %s and user_id_2 = %s);'
+        argum = [self.user_id, user_2]
+        sql = 'SELECT COUNT(*) FROM friendship WHERE (user_id_1 = %s and user_id_2 = %s);'
         curs.execute(sql, argum)
         result = curs.fetchone()
         conn.close()
@@ -102,18 +101,6 @@ class User(UserMixin):
         result = curs.fetchone()
         conn.close()
         return result[0] == 1
-
-    def friends_news(self):
-        """желания и списки, добавленные недавно друзьями пользователя (не для /index)"""
-        pass
-
-    def friends_list(self):
-        """показ всех друзей пользователя"""
-        pass
-
-    def requests_list(self):
-        """показ всех запросов на дружбу пользователю"""
-        pass
     # TODO функции показа другей и запросов на друзья
     # TODO подсчет кол-ва друзей ???
 
@@ -144,7 +131,7 @@ class WishList:
         self.user_id = user_id
         self.title = title
         self.about = about
-        self.access_level = access_level
+        self.access_level = access_level  # TRUE - открытый, FALSE - закрытый
 
 
 class WishItem:
@@ -153,7 +140,7 @@ class WishItem:
         self.item_id = item_id
         self.title = title
         self.about = about
-        self.access_level = access_level
+        self.access_level = access_level  # TRUE - открытый, FALSE - закрытый
         self.picture = picture
         self.giver_id = giver_id
 

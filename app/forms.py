@@ -151,7 +151,6 @@ class AddWishItem(FlaskForm):
     # TODO форма для picture
 
 
-
 class AddWishList(FlaskForm):
     """форма добавления списка желаний"""
     title = StringField()
