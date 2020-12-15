@@ -1,13 +1,14 @@
 {% extends "base.html" %}
 
 {% block content %}
-    {% if current_user.is_authenticated%}
-        <h1>Welcome to Wishlist!</h1>
-        <br>
-    {% else%}
+    {% if current_user.is_authenticated %}
         <h1>Hi, {{ current_user.nickname }}!</h1>
         <br>
-<h3> last wishes of all users:  </h3>
+    {% else%}
+        <h1>Welcome to Wishlist!</h1>
+        <br>
+    {% endif %}
+<h3> Last wishes of all users:  </h3>
     <!--отображение открытых желаний всех пользователей-->
     {% if wish_item %}
         {% for wish_item in wish_item %}

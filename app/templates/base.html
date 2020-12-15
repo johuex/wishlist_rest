@@ -21,10 +21,10 @@
         <!--Left Menu-->
         <div id="menu">
             {% if current_user.is_authenticated %}
-                <p><a href="{{ url_for('login') }}">News</a></p>
-                <p><a href="{{ url_for('login') }}">My Wishes</a></p>
-                <p><a href="{{ url_for('login') }}">My Friends</a></p>
-                <p><a href="{{ url_for('login') }}">My Presents</a></p>
+                <p><a href="{{ url_for('news') }}">News</a></p>
+                <p><a href="{{ url_for('all_item', nickname = current_user.nickname) }}">My Wishes</a></p>
+                <p><a href="{{ url_for('friends') }}">My Friends</a></p>
+                <p><a href="{{ url_for('presents') }}">My Presents</a></p>
             {% endif %}
         </div>
         <hr> <!--Подчеркивание-отделитель-->

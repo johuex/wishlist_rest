@@ -3,9 +3,10 @@
 
 {% block content %}
     <h1> Your friends</h1>
-    {% if friends%}
+    {% if friends %}
         {% for friend in friends %}
             {% include '_friend.html' %}
+        {% endfor %}
     {% else %}
     You don't have friends yet :( Search your friends!
     {% endif %}
