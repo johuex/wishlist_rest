@@ -1,0 +1,19 @@
+<!--отображение всех желаний пользователя-->
+{% extends "base.html" %}
+
+{% block content %}
+    {% if current_user.nickname == nickname%}
+        <h2> Yours wishlists and wishes </h2>
+        <a href="{{ url_for('add_wish') }}">Add wish</a>
+    {% else %}
+        <h2> {{ nickname }}'s wishlists and wishes</h2>
+    {% endif %}
+    {% if wishes %}
+        {% for wish_item in wishes %}
+            {% include '_wish.html' %}
+        {% endfor %}
+    {% else %}
+        This user has no wishes yet
+    {% endif %}
+    <hr>
+{% endblock %}

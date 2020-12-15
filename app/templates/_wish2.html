@@ -1,11 +1,9 @@
-<!--sub-template for wish and wishlist in news-->
-<!--TODO отображения желания в формате - username, wishpic, title-->
+<!--sub-template for wish and wishlist in profile-->
 
 {% if wish_item.types == "list" %}
     <table>
     <tr valign="top">
         <td bgcolor="#a9a9a9">{{ wish_item.types }}</td>
-        <td bgcolor="#a9a9a9">{{ user.username }}</td>
     </tr>
     <tr valign="top">
         <td bgcolor="#a9a9a9"><img src="{{ wish_item.picture }}"></td> <!--картинка-->
@@ -16,7 +14,6 @@
     <table>
     <tr valign="top">
         <td bgcolor="#a9a9a9">{{ wish_item.types }}</td>
-        <td bgcolor="#a9a9a9">{{ user.username }}</td>
     </tr>
     <tr valign="top">
         <td bgcolor="#a9a9a9"><img src="{{ wish_item.picture }}"></td> <!--картинка-->

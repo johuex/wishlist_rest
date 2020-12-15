@@ -1,10 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+<!--отображение новостей друзей-->
+{% extends "base.html" %}
 
-</body>
-</html>
+{% block content %}
+    <h2> Your friends new wishlists and wishes</h2>
+    {% if wishes %}
+        {% for wish_item in wishes %}
+            {% include '_wish.html' %}
+        {% endfor %}
+    {% else %}
+        Your friends has no wishes yet or ... you have not friend :(
+    {% endif %}
+    <hr>
+{% endblock %}

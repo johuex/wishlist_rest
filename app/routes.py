@@ -41,15 +41,18 @@ def login():
         if result is None:
             user = None
         else:
-            user = User(result['user_id'], result['phone_number'], result['user_name'], result['surname'], result['userpic'],
-                        result['about'], result['birthday'], result['password_hash'], result['nickname'], result['email'],
+            user = User(result['user_id'], result['phone_number'], result['user_name'], result['surname'],
+                        result['userpic'],
+                        result['about'], result['birthday'], result['password_hash'], result['nickname'],
+                        result['email'],
                         result["last_seen"])
         if user is None or not user.check_password(form.password.data):
             flash('Invalid username or password')
             return redirect(url_for('login'))
         login_user(user, remember=form.remember_me.data)
         next_page = request.args.get('next')
-        if not next_page or url_parse(next_page).netloc != '':  # перенаправление на след страницу, если не был авторизован
+        if not next_page or url_parse(
+                next_page).netloc != '':  # перенаправление на след страницу, если не был авторизован
             next_page = url_for('index')
         return redirect(next_page)
     return render_template('login.html', title='Sign In', form=form)
@@ -77,8 +80,10 @@ def register():
         curs = conn.cursor()
         sql = "INSERT INTO users (phone_number, user_name, surname, birthday, \
         password_hash, nickname, email, userpic) VALUES (%s, %s, %s, %s, %s, %s, %s, %s);"
-        curs.execute(sql, (form.phone_number.data, form.name.data, form.surname.data, datetime.datetime.strptime(form.birthday.data, '%d/%m/%Y'),
-                           generate_password_hash(form.password.data), form.nickname.data, form.email.data, psycopg2.Binary(img),))
+        curs.execute(sql, (form.phone_number.data, form.name.data, form.surname.data,
+                           datetime.datetime.strptime(form.birthday.data, '%d/%m/%Y'),
+                           generate_password_hash(form.password.data), form.nickname.data, form.email.data,
+                           psycopg2.Binary(img),))
         conn.commit()
         conn.close()
         flash('Congratulations, you are now a registered user!')
@@ -114,7 +119,8 @@ def user_profile(nickname):
         flash('User {} not found.'.format(nickname))
         return redirect(url_for('index'))
     else:
-        user = User(result['user_id'], result['phone_number'], result['user_name'], result['surname'], result['userpic'],
+        user = User(result['user_id'], result['phone_number'], result['user_name'], result['surname'],
+                    result['userpic'],
                     result['about'], result['birthday'], result['password_hash'], result['nickname'], result['email'])
         conn = cn.get_connection()
         curs = conn.cursor()
@@ -146,13 +152,15 @@ def edit_profile():
               'SET user_name = %s, surname = %s, birthday = %s,' \
               'email = %s, phone_number = %s, about = %s, nickname = %s ' \
               'WHERE nickname = %s;'
-        curs.execute(sql, (form.user_name.data, form.surname.data, datetime.datetime.strptime(form.birthday.data, '%d/%m/%Y'), form.email.data,
-                           form.phone_number.data, form.about.data, form.nickname.data, old_nick,))
+        curs.execute(sql, (
+        form.user_name.data, form.surname.data, datetime.datetime.strptime(form.birthday.data, '%d/%m/%Y'),
+        form.email.data,
+        form.phone_number.data, form.about.data, form.nickname.data, old_nick,))
         conn.commit()
         conn.close()
         flash('Your changes have been saved.')
         return redirect(url_for('edit_profile', title='Edit Profile',
-                        form=form))
+                                form=form))
     elif request.method == 'GET':
         # если метод GET, то в формы записываем данные пользователя
         form.user_name.data = current_user.user_name
@@ -210,7 +218,7 @@ def add_friend(nickname):
     curs.execute(sql, (nickname,))
     result = curs.fetchone()
     conn.close()
-    if result is None: # если пользователь не найден
+    if result is None:  # если пользователь не найден
         flash('User {} not found.'.format(nickname))
         return redirect(url_for('index'))
     current_user.send_request(result['user_id'])
@@ -254,6 +262,24 @@ def cancel_request(nickname):
     return redirect(url_for('user_profile', nickname=nickname))
 
 
+@app.route('/accept_request/<nickname>')
+@login_required
+def accept_request(nickname):
+    """принять запрос в друзья"""
+    conn = cn.get_connection()
+    curs = conn.cursor()
+    sql = "SELECT user_id FROM users WHERE nickname = %s;"
+    curs.execute(sql, (nickname,))
+    result = curs.fetchone()
+    conn.close()
+    if result is None:
+        flash('User {} not found.'.format(nickname))
+        return redirect(url_for('index'))
+    current_user.accept_request(result['user_id'])
+    flash('You and {} are friends now.'.format(nickname))
+    return redirect(url_for('user_profile', nickname=nickname))
+
+
 @app.route('/news')
 @login_required
 def news():
@@ -268,7 +294,7 @@ def news():
           '      WHERE user_id_1 = %s) ' \
           'UNION ' \
           'SELECT item_id, title, "wish" type ' \
-          'FROM item INNER JOIN user_item' \
+          'FROM item JOIN user_item USING (item_id) ' \
           'WHERE access level = %s and user_id IN' \
           '     (SELECT user_id_2 ' \
           '      FROM friendship ' \
@@ -279,41 +305,53 @@ def news():
     return render_template('friends_news.html', wishes=result)
 
 
-
 @app.route('/friends')
 def friends():
     """отображение друзей пользователя"""
     conn = cn.get_connection()
     curs = conn.cursor()
-    sql = 'SELECT user_id, name, surname, userpic ' \
+    sql = 'SELECT user_id, username, surname, userpic, nickname ' \
+          'FROM users ' \
+          'WHERE user_id IN (' \
+          'SELECT user_id_2 ' \
           'FROM friendship ' \
           'WHERE user_id_1 = %s);'
-    curs.execute(sql, (current_user.nickname,))
+    curs.execute(sql, (current_user.user_id,))
     result = curs.fetchall()
     conn.close()
     return render_template('friendlist.html', friends=result)
 
 
-@app.route('/wishes')
-def all_item():
+@app.route('/<nickname>/wishes')
+def all_item(nickname):
     """отображение всех желаний и списков пользователя"""
     conn = cn.get_connection()
     curs = conn.cursor()
-    sql = 'SELECT list_id, title, "list" type ' \
-          'FROM wishlist ' \
-          'WHERE user_id = %s) ' \
-          'UNION ' \
-          'SELECT item_id, title, "wish" type ' \
-          'FROM item INNER JOIN user_item ' \
-          'WHERE user_id = %s);'
-    curs.execute(sql, (current_user.nickname, current_user.nickname,))
+    if current_user.nickname == nickname:
+        sql = 'SELECT list_id, title, "list" AS types ' \
+              'FROM wishlist ' \
+              'WHERE user_id = %s ' \
+              'UNION ' \
+              'SELECT item_id, title, "wish" AS types ' \
+              'FROM item JOIN user_item USING (item_id) ' \
+              'WHERE user_id = %s;'
+    else:
+        # только открытые списки
+        sql = 'SELECT list_id, title, "list" AS types ' \
+              'FROM wishlist ' \
+              'WHERE user_id = %s AND access_level = %s ' \
+              'UNION ' \
+              'SELECT item_id, title, "wish" AS types ' \
+              'FROM item JOIN user_item  USING (item_id) ' \
+              'WHERE user_id = %s AND access_level = %s;'
+    curs.execute(sql, (nickname, True, nickname, True,))
     result = curs.fetchall()
     conn.close()
-    return render_template('friends_news.html', wishes=result)
+    return render_template('fullwish.html', wishes=result, nickname=nickname)
 
 
 @app.route('/presents')
-def presents(item_id):
+def presents():
     """отображение желаний, который будет исполнять пользователь"""
     conn = cn.get_connection()
     curs = conn.cursor()

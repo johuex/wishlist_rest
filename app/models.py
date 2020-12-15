@@ -104,6 +104,7 @@ class User(UserMixin):
     # TODO функции показа другей и запросов на друзья
     # TODO подсчет кол-ва друзей ???
 
+
 @login.user_loader
 def load_user(user_id):
     """пользовательский загрузчик (связываем Flask-Login и БД)"""
