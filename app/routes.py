@@ -211,7 +211,7 @@ def internal_error(error):
 @app.route('/add_request/<nickname>')
 @login_required
 def add_friend(nickname):
-    """добавить пользователя в друзья"""
+    """добавить пользователя в друзья (отправить запрос на дружбу)"""
     conn = cn.get_connection()
     curs = conn.cursor()
     sql = "SELECT user_id FROM users WHERE nickname = %s;"
@@ -277,6 +277,8 @@ def accept_request(nickname):
         return redirect(url_for('index'))
     current_user.accept_request(result['user_id'])
     flash('You and {} are friends now.'.format(nickname))
+    # TODO обновлять страницу на которой находишься, а не кидать на профиль
+    #next_page = request.args.get('now')
     return redirect(url_for('user_profile', nickname=nickname))
 
 
@@ -311,6 +313,7 @@ def friends():
     """отображение друзей пользователя"""
     conn = cn.get_connection()
     curs = conn.cursor()
+    # запрос на друзей
     sql = 'SELECT user_id, user_name, surname, userpic, nickname ' \
           'FROM users ' \
           'WHERE user_id IN (' \
@@ -319,8 +322,17 @@ def friends():
           'WHERE user_id_1 = %s);'
     curs.execute(sql, (current_user.user_id,))
     result = curs.fetchall()
+    # запрос на запросы-дружбу
+    sql = 'SELECT user_name, surname, userpic, nickname ' \
+          'FROM users ' \
+          'WHERE user_id IN (' \
+          'SELECT user_id_from ' \
+          'FROM friends_requests ' \
+          'WHERE user_id_to = %s);'
+    curs.execute(sql, (current_user.user_id,))
+    result2 = curs.fetchall()
     conn.close()
-    return render_template('friendlist.html', friends=result)
+    return render_template('friendlist.html', friends=result, requests=result2)
 
 
 @app.route('/<nickname>/wishes')

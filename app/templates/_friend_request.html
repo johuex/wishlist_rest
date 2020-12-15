@@ -1,0 +1,12 @@
+<!--sub-template для отображения запроса в друзья-->
+<table bgcolor="#a9a9a9">
+    <tr valign="top">
+        <td bgcolor="#a9a9a9"> <a href="{{ url_for('user_profile', nickname = request.nickname) }}"><img src="{{ request.userpic }}"></a> </td> <!--картинка-->
+        <td bgcolor="#a9a9a9"> <a href="{{ url_for('user_profile', nickname = request.nickname) }}">{{ request.user_name }} {{ request.surname }}</a> </td>
+    </tr>
+    <tr>
+        <td><p><a href="{{ url_for('accept_request', nickname = request.nickname) }}">Accept friend request</a></p></td>
+        <td><p><a href="{{ url_for('cancel_request', nickname = request.nickname) }}">Reject friend request</a></p></td>
+    </tr>
+</table>
+<hr>

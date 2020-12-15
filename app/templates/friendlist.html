@@ -2,6 +2,14 @@
 {% extends "base.html" %}
 
 {% block content %}
+    <h1> Friends request</h1>
+    {% if requests %}
+        {% for request in requests %}
+            {% include '_friend_request.html' %}
+        {% endfor %}
+    {% else %}
+        No new requests for friendship have been received
+    {% endif %}
     <h1> Your friends</h1>
     {% if friends %}
         {% for friend in friends %}
