@@ -1,1 +1,27 @@
 <!--отображение содержимого списка-->
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>{{ wishlist.title }}</h1>
+    {% if wishlist %}
+        <table>
+            <tr valign="top">
+                <td bgcolor="#a9a9a9"><img src="{{ wish.picture }}"></td> <!--картинка-->
+                <td bgcolor="#a9a9a9"> {{ wish.about }} </td> <!--описание-->
+                </tr>
+        </table>
+        <hr>
+        <h2>Wishes in list: </h2>
+        <br>
+        {% if wish_items %}
+            {% for wish_item in wishes %}
+                {% include '_wish2.html' %}
+            {% endfor %}
+        {% else %}
+            No wishes in this list
+        {% endif %}
+    {% else %}
+        This wishlist was not found
+    {% endif %}
+    <hr>
+{% endblock %}

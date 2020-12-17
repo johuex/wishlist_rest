@@ -1,1 +1,17 @@
 <!--отображение содержимого желания-->
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>{{ wish.title }}</h1>
+    {% if wish %}
+    <table>
+        <tr valign="top">
+            <td bgcolor="#a9a9a9"><img src="{{ wish.picture }}"></td> <!--картинка-->
+            <td bgcolor="#a9a9a9"> {{ wish.about }} </td> <!--описание-->
+            </tr>
+        </table>
+    {% else %}
+        This wish was not found
+    {% endif %}
+    <hr>
+{% endblock %}

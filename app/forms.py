@@ -1,6 +1,6 @@
 """модуль для хранения классов веб-форм"""
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField,FileField
 from wtforms.validators import DataRequired, ValidationError, Email, EqualTo, Length
 import phonenumbers
 import datetime
@@ -143,15 +143,24 @@ class ChangePasswordForm(FlaskForm):
             raise ValidationError('Old Password is incorrect')
 
 
-class AddWishItem(FlaskForm):
-    """форма добавления желания"""
-    title = StringField()
-    about = TextAreaField()
-    access_level = BooleanField()
+class EditWishForm(FlaskForm):
+    """форма изменения желания"""
+    title = StringField('Title', validators=[DataRequired()])
+    about = TextAreaField('Tell something about your wish', validators=[Length(min=0, max=250)])
+    access_level = BooleanField('Opened for others', false_values=(False,))
     # TODO форма для picture
+    picture = FileField('Picture')
+
+class AddWishForm(FlaskForm):
+    """форма добавления желания"""
+    title = StringField('Title', validators=[DataRequired()])
+    about = TextAreaField('Tell something about your wish', validators=[Length(min=0, max=250)])
+    access_level = BooleanField('Opened for others', default='checked', false_values=(False,))
+    # TODO форма для picture
+    picture = FileField('Picture')
 
 
-class AddWishList(FlaskForm):
+class AddWishListForm(FlaskForm):
     """форма добавления списка желаний"""
     title = StringField()
     about = TextAreaField()

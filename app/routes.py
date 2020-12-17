@@ -1,7 +1,7 @@
 """логика для web-страниц"""
 from flask import render_template, flash, redirect, url_for, request
 from app import app
-from app.forms import LoginForm, RegistrationForm, EditProfileForm, ChangePasswordForm
+from app.forms import LoginForm, RegistrationForm, EditProfileForm, ChangePasswordForm, EditWishForm, AddWishForm
 from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.security import generate_password_hash
 from werkzeug.urls import url_parse
@@ -345,11 +345,11 @@ def all_item(nickname):
     result = None
     if current_user.nickname == nickname:
         user_id = current_user.user_id
-        sql = '''SELECT list_id, title, 'list' AS types ''' \
+        sql = '''SELECT list_id, title, user_id, 'list' AS types ''' \
               'FROM wishlist ' \
               'WHERE user_id = %s ' \
               'UNION ' \
-              '''SELECT item_id, title, 'wish' AS types ''' \
+              '''SELECT item_id, title, user_id, 'wish' AS types ''' \
               'FROM item JOIN user_item USING (item_id) ' \
               'WHERE user_id = %s;'
         curs.execute(sql, (user_id, user_id,))
@@ -361,11 +361,11 @@ def all_item(nickname):
               'WHERE nickname = %s;'
         curs.execute(sql, (nickname,))
         user_id = curs.fetchone()
-        sql = '''SELECT list_id, title, 'list' AS types ''' \
+        sql = '''SELECT list_id, title, user_id 'list' AS types ''' \
               'FROM wishlist ' \
               'WHERE user_id = %s AND access_level = %s ' \
               'UNION ' \
-              '''SELECT item_id, title, 'wish' AS types ''' \
+              '''SELECT item_id, title, user_id 'wish' AS types ''' \
               'FROM item JOIN user_item  USING (item_id) ' \
               'WHERE user_id = %s AND access_level = %s;'
         curs.execute(sql, (user_id["user_id"], True, user_id["user_id"], True,))
@@ -403,15 +403,52 @@ def wish_item(item_id):
           'FROM item ' \
           'WHERE item_id = %s);'
     curs.execute(sql, (item_id,))
-    result = curs.fetchall()
+    result = curs.fetchone()
     conn.close()
-    return render_template('fullwish.html', wish=result)
+    return render_template('show_wish.html', wish=result)
+
+
+@app.route('/<list_id>')
+def wishlist_item(list_id):
+    """отображение конкретного списка"""
+    conn = cn.get_connection()
+    curs = conn.cursor()
+    sql = 'SELECT * ' \
+          'FROM item ' \
+          'WHERE item_id = %s);'
+    curs.execute(sql, (list_id,))
+    result = curs.fetchone()
+    conn.close()
+    return render_template('show_list.html', wishlist=result, wish_items=result2)
 
 
 @app.route('/add_wish')
 @login_required
 def add_wish():
-    """отображение конкретного желания"""
+    """добавить желание"""
+    form = AddWishForm()
+    if form.validate_on_submit():
+        conn = cn.get_connection()
+        curs = conn.cursor()
+        # заливаем желание
+        sql = 'INSERT INTO item (title, about, access_level, picture) VALUES (%s, %s, %s, %s);'
+        curs.execute(sql, (form.title.data, form.about.data, form.access_level.data, form.picture.data,))
+        # связываем желание и его степень
+        sql = ''
+        curs.execute(sql)
+        result = curs.fetchone()
+        sql = 'INSERT INTO item_degree () VALUES (%s, %s)'
+        curs.execute(sql, (,))
+        conn.commit()
+        conn.close()
+    return render_template('add_wish.html', form=form)
+
+
+@app.route('/<item_id>/edit')
+@login_required
+def edit_wish(item_id):
+    """изменение данных желания желания"""
+    form = EditWishForm()
     conn = cn.get_connection()
     curs = conn.cursor()
     sql = 'SELECT * ' \
@@ -420,4 +457,21 @@ def add_wish():
     curs.execute(sql, (item_id,))
     result = curs.fetchall()
     conn.close()
+    return render_template('add_wish.html', wish=result, form=form)
+
+
+@app.route('/<list_id>/edit')
+@login_required
+def edit_wishlist(list_id):
+    """изменение данных желания желания"""
+
+    conn = cn.get_connection()
+    curs = conn.cursor()
+    sql = 'SELECT * ' \
+          'FROM item ' \
+          'WHERE item_id = %s);'
+    curs.execute(sql, (list_id,))
+    result = curs.fetchall()
+    conn.close()
     return render_template('add_wish.html', wish=result)
+
