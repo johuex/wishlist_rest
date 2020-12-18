@@ -408,8 +408,19 @@ def wish_item(item_id):
           'WHERE item_id = %s;'
     curs.execute(sql, (item_id,))
     result = curs.fetchone()
+    sql = 'SELECT nickname ' \
+          'FROM users ' \
+          'WHERE user_id IN (' \
+          '     SELECT user_id ' \
+          '     FROM user_item ' \
+          '     WHERE item_id = %s);'
+    curs.execute(sql, (item_id,))
+    result2 = curs.fetchone()
     conn.close()
-    return render_template('show_wish.html', wish=result)
+    if result["access_level"] or current_user.nickname == result2["nickname"]:
+        return render_template('show_wish.html', wish=result, nickname=result2["nickname"])
+    else:
+        return render_template('show_wish.html', wish=None, nickname=None)
 
 
 @app.route('/list/<list_id>')

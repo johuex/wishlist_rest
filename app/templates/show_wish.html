@@ -2,13 +2,18 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>{{ wish.title }}</h1>
     {% if wish %}
-    <table>
-        <tr valign="top">
-            <td bgcolor="#a9a9a9"><img src="{{ wish.picture }}"></td> <!--картинка-->
-            <td bgcolor="#a9a9a9"> {{ wish.about }} </td> <!--описание-->
+        <h1>{{ wish.title }}</h1>
+        <table>
+            <tr valign="top">
+                <td bgcolor="#a9a9a9"><img src="{{ wish.picture }}"></td> <!--картинка-->
+                <td bgcolor="#a9a9a9"> {{ wish.about }} </td> <!--описание-->
             </tr>
+            {% if current_user.nickname == nickname and wish.giver_id is none%} <!--запрет на редактирование, если giver_id уже есть-->
+            <tr>
+                <td bgcolor="#a9a9a9"><p><a href="{{ url_for('edit_wish', item_id = wish.id) }}"> Edit wish </a></p></td> <!--заголовок-->
+            </tr>
+        {% endif %}
         </table>
     {% else %}
         This wish was not found
