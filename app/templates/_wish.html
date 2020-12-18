@@ -5,22 +5,21 @@
     <table>
     <tr valign="top">
         <td bgcolor="#a9a9a9">{{ wish_item.types }}</td>
-        <td bgcolor="#a9a9a9">{{ user.username }}</td>
+        <td bgcolor="#a9a9a9">{{ wish_item.nickname }}</td>
     </tr>
     <tr valign="top">
-        <td bgcolor="#a9a9a9"><img src="{{ wish_item.picture }}"></td> <!--картинка-->
-        <td bgcolor="#a9a9a9"><p><a href="{{ url_for('wishlist_item') }}"> {{ wish_item.title}} </a></p></td> <!--заголовок-->
+        <td bgcolor="#a9a9a9"><p><a href="{{ url_for('wishlist_item', list_id = wish_item.id) }}"> {{ wish_item.title}} </a></p></td> <!--заголовок-->
     </tr>
     </table>
 {% else %}
     <table>
     <tr valign="top">
         <td bgcolor="#a9a9a9">{{ wish_item.types }}</td>
-        <td bgcolor="#a9a9a9">{{ user.username }}</td>
+        <td bgcolor="#a9a9a9">{{ wish_item.nickname }}</td>
     </tr>
     <tr valign="top">
         <td bgcolor="#a9a9a9"><img src="{{ wish_item.picture }}"></td> <!--картинка-->
-        <td bgcolor="#a9a9a9"><p><a href="{{ url_for('wish_item') }}"> {{ wish_item.title}} </a></p></td> <!--заголовок-->
+        <td bgcolor="#a9a9a9"><p><a href="{{ url_for('wish_item', item_id = wish_item.id) }}"> {{ wish_item.title}} </a></p></td> <!--заголовок-->
     </tr>
 </table>
 {% endif %}

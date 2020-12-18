@@ -10,8 +10,8 @@
     {% endif %}
 <h3> Last wishes of all users:  </h3>
     <!--отображение открытых желаний всех пользователей-->
-    {% if wish_item %}
-        {% for wish_item in wish_item %}
+    {% if wishes %}
+        {% for wish_item in wishes %}
             {% include '_wish.html' %}
         {% endfor %}
     {% else %}

@@ -1,6 +1,6 @@
 """модуль для хранения классов веб-форм"""
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField,FileField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField, FileField, SelectField
 from wtforms.validators import DataRequired, ValidationError, Email, EqualTo, Length
 import phonenumbers
 import datetime
@@ -150,6 +150,11 @@ class EditWishForm(FlaskForm):
     access_level = BooleanField('Opened for others', false_values=(False,))
     # TODO форма для picture
     picture = FileField('Picture')
+    degree = SelectField('Degree of wish desire',
+                         choices=[(1, 'I really really want it'), (2, 'I really want it'), (3, 'I want it'),
+                                  (4, 'I do not really want it'), (5, 'I do not want it')])
+    submit = SubmitField('Submit')
+
 
 class AddWishForm(FlaskForm):
     """форма добавления желания"""
@@ -158,7 +163,10 @@ class AddWishForm(FlaskForm):
     access_level = BooleanField('Opened for others', default='checked', false_values=(False,))
     # TODO форма для picture
     picture = FileField('Picture')
-
+    degree = SelectField('Degree of wish desire', choices=[(1, 'I really really want it'), (2, 'I really want it'), (3, 'I want it'),
+                                                           (4, 'I do not really want it'), (5, 'I do not want it')],
+                         validate_choice=True)
+    submit = SubmitField('Submit')
 
 class AddWishListForm(FlaskForm):
     """форма добавления списка желаний"""
@@ -166,3 +174,4 @@ class AddWishListForm(FlaskForm):
     about = TextAreaField()
     access_level = BooleanField()
     pass
+    submit = SubmitField('Submit')

@@ -33,12 +33,5 @@
         </tr>
     </table>
     <hr>
-    {% if wish_item %}
-        {% for wish_item in wish_item %}
-            {% include '_wish.html' %}
-        {% endfor %}
-    {% else %}
-        This user has no wishes yet
-    {% endif %}
-    <hr>
+     <p><a href="{{ url_for('all_item', nickname = user.nickname) }}"> {{ user.nickname }}'s wishlists and wishes</a></p>
 {% endblock %}

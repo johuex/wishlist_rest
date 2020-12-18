@@ -7,10 +7,9 @@
         <td bgcolor="#a9a9a9">{{ wish_item.types }}</td>
     </tr>
     <tr valign="top">
-        <td bgcolor="#a9a9a9"><img src="{{ wishlist_item.picture }}"></td> <!--картинка-->
         <td bgcolor="#a9a9a9"><p><a href="{{ url_for('wishlist_item') }}"> {{ wish_item.title}} </a></p></td> <!--заголовок-->
         {% if current_user.nickname == nickname %}
-            <td bgcolor="#a9a9a9"><p><a href="{{ url_for('edit_wishlist', item_id=wish_item.item_id) }}"> Edit wishlist</a></p></td> <!--заголовок-->
+            <td bgcolor="#a9a9a9"><p><a href="{{ url_for('edit_wishlist', list_id=wish_item.id) }}"> Edit wishlist</a></p></td> <!--заголовок-->
         {% endif %}
     </tr>
     </table>
@@ -22,9 +21,9 @@
     </tr>
     <tr valign="top">
         <td bgcolor="#a9a9a9"><img src="{{ wish_item.picture }}"></td> <!--картинка-->
-        <td bgcolor="#a9a9a9"><p><a href="{{ url_for('wish_item') }}"> {{ wish_item.title}} </a></p></td> <!--заголовок-->
-        {% if current_user.nickname == nickname and wish_item.giver_id is not None%} <!--запрет на редактирование, если giver_id уже есть-->
-            <td bgcolor="#a9a9a9"><p><a href="{{ url_for('edit_item', item_id=wish_item.item_id) }}"> Edit wish</a></p></td> <!--заголовок-->
+        <td bgcolor="#a9a9a9"><p><a href="{{ url_for('wish_item', item_id = wish_item.id) }}"> {{ wish_item.title}} </a></p></td> <!--заголовок-->
+        {% if current_user.nickname == nickname and wish_item.giver_id is none%} <!--запрет на редактирование, если giver_id уже есть-->
+            <td bgcolor="#a9a9a9"><p><a href="{{ url_for('edit_wish', item_id = wish_item.id) }}"> Edit wish</a></p></td> <!--заголовок-->
         {% endif %}
     </tr>
 </table>

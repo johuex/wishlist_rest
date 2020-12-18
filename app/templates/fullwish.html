@@ -4,13 +4,13 @@
 {% block content %}
     {% if current_user.nickname == nickname%}
         <h2> Yours wishlists and wishes </h2>
-        <a href="{{ url_for('add_wish') }}">Add wish</a>
+        <a href="{{ url_for('add_wish', nickname = nickname) }}">Add wish</a>
     {% else %}
         <h2> {{ nickname }}'s wishlists and wishes</h2>
     {% endif %}
     {% if wishes %}
         {% for wish_item in wishes %}
-            {% include '_wish.html' %}
+            {% include '_wish2.html' %}
         {% endfor %}
     {% else %}
         This user has no wishes yet

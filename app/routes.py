@@ -18,11 +18,21 @@ def index():
     '''тут будут последние 50 открытых желаний всех пользователей'''
     conn = cn.get_connection()
     curs = conn.cursor()
-    sql = "SELECT * FROM item WHERE access_level = %s LIMIT 50;"
-    curs.execute(sql, (True,))
+    # только открытые списки и открытые желания вне списков
+    sql = '''SELECT list_id AS id, title, NULL AS picture, 'list' AS types, nickname ''' \
+        'FROM wishlist JOIN users USING (user_id) ' \
+        'WHERE access_level = %s ' \
+        'UNION ' \
+        '''SELECT item.item_id AS id, title, picture, 'wish' AS types, nickname ''' \
+        'FROM item JOIN user_item ' \
+            'ON item.item_id = user_item.item_id ' \
+          'JOIN users ' \
+            'ON users.user_id = user_item.user_id ' \
+        'WHERE access_level = %s AND item.item_id NOT IN (SELECT item_id FROM item_list);'
+    curs.execute(sql, (True, True,))
     result = curs.fetchall()
     conn.close()
-    return render_template('index.html', wish_item=result)
+    return render_template('index.html', wishes=result)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -122,13 +132,7 @@ def user_profile(nickname):
         user = User(result['user_id'], result['phone_number'], result['user_name'], result['surname'],
                     result['userpic'],
                     result['about'], result['birthday'], result['password_hash'], result['nickname'], result['email'])
-        conn = cn.get_connection()
-        curs = conn.cursor()
-        sql = "SELECT * FROM item WHERE access_level = %s;"
-        curs.execute(sql, (True,))
-        result = curs.fetchall()
-        conn.close()
-    return render_template('user_profile.html', user=user, wish_item=result)
+    return render_template('user_profile.html', user=user)
 
 
 @app.route('/edit_profile', methods=['GET', 'POST'])
@@ -288,19 +292,19 @@ def news():
     """новости от друзей"""
     conn = cn.get_connection()
     curs = conn.cursor()
-    sql = '''SELECT list_id, title, 'list' AS types ''' \
+    sql = '''SELECT list_id AS id, title, 'list' AS types, NULL AS picture ''' \
           'FROM wishlist ' \
           'WHERE access_level = %s and user_id IN' \
           '     (SELECT user_id_2' \
           '      FROM friendship' \
           '      WHERE user_id_1 = %s) ' \
           'UNION ' \
-          '''SELECT item_id, title, 'wish' AS types ''' \
+          '''SELECT item_id AS id, title, 'wish' AS types, picture ''' \
           'FROM item JOIN user_item USING (item_id) ' \
-          'WHERE access_level = %s and user_id IN' \
+          'WHERE access_level = %s AND user_id IN' \
           '     (SELECT user_id_2 ' \
           '      FROM friendship ' \
-          '      WHERE user_id_1 = %s);'
+          '      WHERE user_id_1 = %s) AND item_id NOT IN (SELECT item_id FROM item_list);'
     curs.execute(sql, (True, current_user.user_id, True, current_user.user_id,))
     result = curs.fetchall()
     conn.close()
@@ -345,13 +349,13 @@ def all_item(nickname):
     result = None
     if current_user.nickname == nickname:
         user_id = current_user.user_id
-        sql = '''SELECT list_id, title, user_id, 'list' AS types ''' \
+        sql = '''SELECT list_id AS id, title, user_id, 'list' AS types, 0 AS giver_id, NULL AS picture ''' \
               'FROM wishlist ' \
               'WHERE user_id = %s ' \
               'UNION ' \
-              '''SELECT item_id, title, user_id, 'wish' AS types ''' \
+              '''SELECT item_id AS id, title, user_id, 'wish' AS types, giver_id, picture ''' \
               'FROM item JOIN user_item USING (item_id) ' \
-              'WHERE user_id = %s;'
+              'WHERE user_id = %s AND item_id NOT IN (SELECT item_id FROM item_list);'
         curs.execute(sql, (user_id, user_id,))
         result = curs.fetchall()
     else:
@@ -361,13 +365,13 @@ def all_item(nickname):
               'WHERE nickname = %s;'
         curs.execute(sql, (nickname,))
         user_id = curs.fetchone()
-        sql = '''SELECT list_id, title, user_id 'list' AS types ''' \
+        sql = '''SELECT list_id AS id, title, user_id, 'list' AS types, 0 AS giver_id, NULL AS picture ''' \
               'FROM wishlist ' \
               'WHERE user_id = %s AND access_level = %s ' \
               'UNION ' \
-              '''SELECT item_id, title, user_id 'wish' AS types ''' \
+              '''SELECT item_id AS id, title, user_id, 'wish' AS types, giver_id, picture ''' \
               'FROM item JOIN user_item  USING (item_id) ' \
-              'WHERE user_id = %s AND access_level = %s;'
+              'WHERE user_id = %s AND access_level = %s AND item_id NOT IN (SELECT item_id FROM item_list);'
         curs.execute(sql, (user_id["user_id"], True, user_id["user_id"], True,))
         result = curs.fetchall()
     conn.close()
@@ -394,21 +398,21 @@ def presents():
     return render_template('my_presents.html', presents=result)
 
 
-@app.route('/<item_id>')
+@app.route('/wish/<item_id>')
 def wish_item(item_id):
     """отображение конкретного желания"""
     conn = cn.get_connection()
     curs = conn.cursor()
     sql = 'SELECT * ' \
           'FROM item ' \
-          'WHERE item_id = %s);'
+          'WHERE item_id = %s;'
     curs.execute(sql, (item_id,))
     result = curs.fetchone()
     conn.close()
     return render_template('show_wish.html', wish=result)
 
 
-@app.route('/<list_id>')
+@app.route('/list/<list_id>')
 def wishlist_item(list_id):
     """отображение конкретного списка"""
     conn = cn.get_connection()
@@ -422,45 +426,71 @@ def wishlist_item(list_id):
     return render_template('show_list.html', wishlist=result, wish_items=result2)
 
 
-@app.route('/add_wish')
+@app.route('/<nickname>/add_wish', methods=['GET', 'POST'])
 @login_required
-def add_wish():
+def add_wish(nickname):
     """добавить желание"""
     form = AddWishForm()
     if form.validate_on_submit():
         conn = cn.get_connection()
         curs = conn.cursor()
         # заливаем желание
-        sql = 'INSERT INTO item (title, about, access_level, picture) VALUES (%s, %s, %s, %s);'
+        sql = 'INSERT INTO item (title, about, access_level, picture) VALUES (%s, %s, %s, %s) RETURNING item_id;'
         curs.execute(sql, (form.title.data, form.about.data, form.access_level.data, form.picture.data,))
-        # связываем желание и его степень
-        sql = ''
-        curs.execute(sql)
         result = curs.fetchone()
-        sql = 'INSERT INTO item_degree () VALUES (%s, %s)'
-        curs.execute(sql, (,))
+        # связываем желание и его степень + ползователя и предмет
+        sql = 'INSERT INTO item_degree (item_id, degree_id) VALUES (%s, %s);' \
+              'INSERT INTO user_item (user_id, item_id) VALUES ((SELECT user_id FROM users WHERE nickname = %s), %s);'
+        curs.execute(sql, (result["item_id"], form.degree.data, nickname, result["item_id"],))
         conn.commit()
         conn.close()
+        flash('New wish was added!')
+        return redirect(url_for('all_item', nickname=nickname))
     return render_template('add_wish.html', form=form)
 
 
-@app.route('/<item_id>/edit')
+@app.route('/<item_id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit_wish(item_id):
-    """изменение данных желания желания"""
+    """изменение желания"""
     form = EditWishForm()
-    conn = cn.get_connection()
-    curs = conn.cursor()
-    sql = 'SELECT * ' \
-          'FROM item ' \
-          'WHERE item_id = %s);'
-    curs.execute(sql, (item_id,))
-    result = curs.fetchall()
-    conn.close()
-    return render_template('add_wish.html', wish=result, form=form)
+    if form.validate_on_submit():
+        # если изменили информацию и она прошла валидацию, то данные записываются в БД
+        conn = cn.get_connection()
+        curs = conn.cursor()
+        sql = 'UPDATE item ' \
+              'SET title = %s, about = %s, access_level = %s,' \
+              'picture = %s ' \
+              'WHERE item_id = %s;' \
+              'UPDATE item_degree ' \
+              'SET degree_id = %s ' \
+              'WHERE item_id = %s;'
+        curs.execute(sql, (form.title.data, form.about.data, form.access_level.data, form.picture.data, item_id,
+                           form.degree.data, item_id,))
+        conn.commit()
+        conn.close()
+        flash('Your changes have been saved.')
+        return render_template('edit_wish.html', form=form, title = form.title.data)
+    elif request.method == 'GET':
+        conn = cn.get_connection()
+        curs = conn.cursor()
+        sql = 'SELECT title, about, access_level, picture, degree_id ' \
+              'FROM item JOIN item_degree USING (item_id) ' \
+              'WHERE item_id = %s;'
+        curs.execute(sql, (item_id,))
+        result = curs.fetchone()
+        conn.commit()
+        conn.close()
+        # если метод GET, то в формы записываем данные пользователя
+        form.title.data = result["title"]
+        form.about.data = result["about"]
+        form.access_level.data = result["access_level"]
+        form.picture.data = result["picture"]
+        form.degree.data = result["degree_id"]
+    return render_template('edit_wish.html', form=form, title=form.title.data)
 
 
-@app.route('/<list_id>/edit')
+@app.route('/<list_id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit_wishlist(list_id):
     """изменение данных желания желания"""

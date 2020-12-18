@@ -2,7 +2,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>Edit wish: {{ wish.title }} </h1>
+    <h1>Edit wish: {{ title }} </h1>
     <form action="" method="post"  novalidate>
         {{ form.hidden_tag() }}
         <p>
@@ -23,6 +23,20 @@
             {{ form.access_level.label }}<br>
             {{ form.access_level(size=32) }}<br>
             {% for error in form.access_level.errors %} <!--для отображения ошибок-->
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.picture.label }}<br>
+            {{ form.picture(size=32) }}<br>
+            {% for error in form.picture.errors %} <!--для отображения ошибок-->
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.degree.label }}<br>
+            {{ form.degree }}<br>
+            {% for error in form.degree.errors %} <!--для отображения ошибок-->
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>

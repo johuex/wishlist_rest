@@ -8,8 +8,8 @@ from app import login
 
 class User(UserMixin):
     """Класс модели пользователя,повторяющий структуру схемы User из базы данных"""
-    def __init__(self, user_id = None, phone_number = None, name = None, surname = None, userpic = None,
-                 about = None, birthday = None, password_hash = None, nickname = None, email = None, last_seen = None):
+    def __init__(self, user_id=None, phone_number=None, name=None, surname=None, userpic=None,
+                 about=None, birthday=None, password_hash=None, nickname=None, email=None, last_seen=None):
         self.user_id = user_id
         self.phone_number = phone_number
         self.user_name = name
