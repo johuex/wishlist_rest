@@ -8,16 +8,19 @@
             <tr valign="top">
                 <td bgcolor="#a9a9a9"><img src="{{ wish.picture }}"></td> <!--картинка-->
                 <td bgcolor="#a9a9a9"> {{ wish.about }} </td> <!--описание-->
+                <td bgcolor="#a9a9a9"> <p>Degree of desire for a wish: {{ degree }}</p> </td>
             </tr>
             {% if current_user.nickname == nickname and wish.giver_id is none%} <!--запрет на редактирование, если giver_id уже есть-->
             <tr>
-                <td bgcolor="#a9a9a9"><p><a href="{{ url_for('edit_wish', item_id = wish.id) }}"> Edit wish </a></p></td> <!--редактировать-->
-                <td bgcolor="#a9a9a9"><p><a href="{{ url_for('delete_wish') }}"> Delete wish </a></p> </td> <!--удалить желание-->
+                <td bgcolor="#a9a9a9"><p><a href="{{ url_for('edit_wish', item_id=wish.item_id) }}"> Edit wish </a></p></td> <!--редактировать-->
+                <td bgcolor="#a9a9a9"><p><a href="{{ url_for('delete_wish', item_id=wish.item_id) }}"> Delete wish </a></p> </td> <!--удалить желание-->
             </tr>
             {% else %}
-                <tr>
-                    <td bgcolor="#a9a9a9"><p><a href="{{ url_for('make_wish') }}"> Make wish comes true </a></p> </td> <!--исполнить (зарезервировать) желание-->
-                </tr>
+                {% if current_user.nickname != nickname and wish.giver_id is none%}
+                    <tr>
+                        <td bgcolor="#a9a9a9"><p><a href="{{ url_for('make_wish', item_id=wish.item_id) }}"> Make wish comes true </a></p> </td> <!--исполнить (зарезервировать) желание-->
+                    </tr>
+                {% endif %}
             {% endif %}
         </table>
     {% else %}

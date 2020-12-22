@@ -10,9 +10,6 @@ from werkzeug.urls import url_parse
 import connectDB as cn
 from app.models import User
 import datetime
-import psycopg2
-import base64
-from PIL import Image
 
 
 @app.route('/')
@@ -126,6 +123,7 @@ def before_request():  # выполняется непосредственно �
 @login_required
 def user_profile(nickname):
     """показ профиля пользователя"""
+    #img = open('static/images/userpic.png', 'rb').read() # в таком виде файл открывается
     conn = cn.get_connection()
     curs = conn.cursor()
     sql = 'SELECT * FROM users WHERE nickname = %s;'
@@ -403,7 +401,7 @@ def presents():
     curs.execute(sql, (user_id["user_id"],))
     result = curs.fetchall()
     conn.close()
-    return render_template('my_presents.html', presents=result)
+    return render_template('my_presents.html', presents=result, nickname=current_user.nickname)
 
 
 @app.route('/wish/<item_id>')
@@ -411,11 +409,21 @@ def wish_item(item_id):
     """отображение конкретного желания"""
     conn = cn.get_connection()
     curs = conn.cursor()
+    # все о wish
     sql = 'SELECT * ' \
           'FROM item ' \
           'WHERE item_id = %s;'
     curs.execute(sql, (item_id,))
     result = curs.fetchone()
+    sql = 'SELECT degree ' \
+          'FROM degree_of_desire ' \
+          'WHERE degree_id IN (' \
+          '     SELECT degree_id ' \
+          '     FROM item_degree ' \
+          '     WHERE item_id = %s);'
+    curs.execute(sql, (result["item_id"],))
+    result3 = curs.fetchone()
+    # защита от несанкционированного доступа
     sql = 'SELECT nickname ' \
           'FROM users ' \
           'WHERE user_id IN (' \
@@ -426,9 +434,9 @@ def wish_item(item_id):
     result2 = curs.fetchone()
     conn.close()
     if (result["access_level"] and result["giver_id"] is None) or current_user.nickname == result2["nickname"]:
-        return render_template('show_wish.html', wish=result, nickname=result2["nickname"])
+        return render_template('show_wish.html', wish=result, nickname=result2["nickname"], degree=result3["degree"])
     else:
-        return render_template('show_wish.html', wish=None, nickname=None)
+        return render_template('show_wish.html', wish=None, nickname=None, degree=None)
 
 
 @app.route('/list/<list_id>')
@@ -468,6 +476,15 @@ def add_wish(nickname):
         flash('New wish was added!')
         return redirect(url_for('all_item', nickname=nickname))
     return render_template('add_wish.html', form=form)
+
+@app.route("/<nickname>/add_wishlist")
+@login_required
+def add_wishlist(nickname):
+    """добавить список желаний"""
+    form = AddWishlistForm()
+    if form.validate_on_submit():
+        pass
+    return render_template()
 
 
 @app.route('/<item_id>/edit', methods=['GET', 'POST'])
@@ -544,12 +561,14 @@ def delete_wish(item_id):
 @login_required
 def make_wish(item_id):
     """исполнить (зарезервировать) желание"""
+    item_id = int(item_id)
     conn = cn.get_connection()
     curs = conn.cursor()
     sql = 'UPDATE item ' \
           'SET giver_id = %s ' \
           'WHERE item_id = %s;'
     curs.execute(sql, (current_user.user_id, item_id,))
-    result = curs.fetchall()
+    conn.commit()
+    flash('You select a wish!')
     conn.close()
-    return render_template('add_wish.html', wish=result)
+    return redirect(url_for('presents'))
