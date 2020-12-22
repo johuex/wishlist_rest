@@ -3,9 +3,9 @@
 {% block content %}
     <table> <!--аватар пользователя-->
         <tr valign="top">
-            <td><img src="{{ user.userpic }}"></td>
+            <td> <img src="{{url_for('static',filename='images/userpic.png')}}"> </td>
             <td>
-                {% if user%}
+                {% if user %}
                 <h1>User: {{ user.nickname }}</h1>
                 {% if user.about %}<p>{{ user.about }}</p>{% endif %}
                 {% if user.last_seen %}<p>Last seen on: {{ user.last_seen }}</p>{% endif %}

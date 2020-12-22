@@ -6,7 +6,7 @@ create table "users"
 	phone_number varchar(12) not null,
 	user_name varchar(50) not null,
 	surname varchar(50) not null,
-	userpic bytea,
+	userpic varchar(255),
 	about varchar(255),
 	birthday date not null,
     password_hash varchar(255),
@@ -111,7 +111,7 @@ create table item
 	title varchar(50) not null,
 	about varchar(255) not null,
 	access_level bool not null,
-	picture bytea not null,
+	picture varchar(255),
 	"giver_id" int
 		constraint item_user_user_id_fk
 			references users

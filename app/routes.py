@@ -1,5 +1,7 @@
 """логика для web-страниц"""
-from flask import render_template, flash, redirect, url_for, request
+import io
+
+from flask import render_template, flash, redirect, url_for, request, make_response
 from app import app
 from app.forms import LoginForm, RegistrationForm, EditProfileForm, ChangePasswordForm, EditWishForm, AddWishForm
 from flask_login import current_user, login_user, logout_user, login_required
@@ -9,6 +11,8 @@ import connectDB as cn
 from app.models import User
 import datetime
 import psycopg2
+import base64
+from PIL import Image
 
 
 @app.route('/')
@@ -82,18 +86,22 @@ def register():
         return redirect(url_for('index'))
     form = RegistrationForm()
     if form.validate_on_submit():
-        img = open('userpic.jpg', 'rb').read()
         user = User(phone_number=form.phone_number.data, name=form.name.data, surname=form.surname.data,
                     birthday=form.birthday.data, nickname=form.nickname.data, email=form.email.data)
         user.set_password(form.password.data)
         conn = cn.get_connection()
         curs = conn.cursor()
         sql = "INSERT INTO users (phone_number, user_name, surname, birthday, \
-        password_hash, nickname, email, userpic) VALUES (%s, %s, %s, %s, %s, %s, %s, %s);"
+        password_hash, nickname, email) VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING user_id;"
         curs.execute(sql, (form.phone_number.data, form.name.data, form.surname.data,
                            datetime.datetime.strptime(form.birthday.data, '%d/%m/%Y'),
-                           generate_password_hash(form.password.data), form.nickname.data, form.email.data,
-                           psycopg2.Binary(img),))
+                           generate_password_hash(form.password.data), form.nickname.data, form.email.data,))
+        result = curs.fetchone()
+        image_path = '/static/images/userpic.png'  # фото по умолчанию
+        sql = 'UPDATE users ' \
+              'SET userpic = %s ' \
+              'WHERE user_id = %s;'
+        curs.execute(sql, (image_path, result["user_id"]))
         conn.commit()
         conn.close()
         flash('Congratulations, you are now a registered user!')
@@ -304,7 +312,7 @@ def news():
           'WHERE access_level = %s AND user_id IN' \
           '     (SELECT user_id_2 ' \
           '      FROM friendship ' \
-          '      WHERE user_id_1 = %s) AND item_id NOT IN (SELECT item_id FROM item_list);'
+          '      WHERE user_id_1 = %s) AND giver_id IS NULL AND item_id NOT IN (SELECT item_id FROM item_list);'
     curs.execute(sql, (True, current_user.user_id, True, current_user.user_id,))
     result = curs.fetchall()
     conn.close()
@@ -371,7 +379,7 @@ def all_item(nickname):
               'UNION ' \
               '''SELECT item_id AS id, title, user_id, 'wish' AS types, giver_id, picture ''' \
               'FROM item JOIN user_item  USING (item_id) ' \
-              'WHERE user_id = %s AND access_level = %s AND item_id NOT IN (SELECT item_id FROM item_list);'
+              'WHERE user_id = %s AND access_level = %s AND giver_id IS NULL AND item_id NOT IN (SELECT item_id FROM item_list);'
         curs.execute(sql, (user_id["user_id"], True, user_id["user_id"], True,))
         result = curs.fetchall()
     conn.close()
@@ -417,7 +425,7 @@ def wish_item(item_id):
     curs.execute(sql, (item_id,))
     result2 = curs.fetchone()
     conn.close()
-    if result["access_level"] or current_user.nickname == result2["nickname"]:
+    if (result["access_level"] and result["giver_id"] is None) or current_user.nickname == result2["nickname"]:
         return render_template('show_wish.html', wish=result, nickname=result2["nickname"])
     else:
         return render_template('show_wish.html', wish=None, nickname=None)
@@ -449,10 +457,12 @@ def add_wish(nickname):
         sql = 'INSERT INTO item (title, about, access_level, picture) VALUES (%s, %s, %s, %s) RETURNING item_id;'
         curs.execute(sql, (form.title.data, form.about.data, form.access_level.data, form.picture.data,))
         result = curs.fetchone()
-        # связываем желание и его степень + ползователя и предмет
+        image_path = '/static/images/wish.jpg'  # картинка по умолчанию
+        # связываем желание и его степень + ползователя и предмет; указываем путь к картинке
         sql = 'INSERT INTO item_degree (item_id, degree_id) VALUES (%s, %s);' \
-              'INSERT INTO user_item (user_id, item_id) VALUES ((SELECT user_id FROM users WHERE nickname = %s), %s);'
-        curs.execute(sql, (result["item_id"], form.degree.data, nickname, result["item_id"],))
+              'INSERT INTO user_item (user_id, item_id) VALUES ((SELECT user_id FROM users WHERE nickname = %s), %s);' \
+              'UPDATE item SET picture = %s WHERE item_id = %s;'
+        curs.execute(sql, (result["item_id"], form.degree.data, nickname, result["item_id"], image_path, result["item_id"],))
         conn.commit()
         conn.close()
         flash('New wish was added!')
@@ -470,8 +480,7 @@ def edit_wish(item_id):
         conn = cn.get_connection()
         curs = conn.cursor()
         sql = 'UPDATE item ' \
-              'SET title = %s, about = %s, access_level = %s,' \
-              'picture = %s ' \
+              'SET title = %s, about = %s, access_level = %s, picture = %s ' \
               'WHERE item_id = %s;' \
               'UPDATE item_degree ' \
               'SET degree_id = %s ' \
@@ -504,7 +513,7 @@ def edit_wish(item_id):
 @app.route('/<list_id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit_wishlist(list_id):
-    """изменение данных желания желания"""
+    """изменение данных желания"""
 
     conn = cn.get_connection()
     curs = conn.cursor()
@@ -516,3 +525,31 @@ def edit_wishlist(list_id):
     conn.close()
     return render_template('add_wish.html', wish=result)
 
+
+@app.route('/<item_id>/delete')
+@login_required
+def delete_wish(item_id):
+    """удалить желание"""
+    conn = cn.get_connection()
+    curs = conn.cursor()
+    sql = 'DELETE FROM item WHERE item_id = %s AND ' \
+          'item_id IN (SELECT item_id FROM user_item WHERE user_id = %s);'
+    curs.execute(sql, (item_id, current_user.user_id))
+    result = curs.fetchall()
+    conn.close()
+    return render_template('add_wish.html', wish=result)
+
+
+@app.route('/<item_id>/make_wish')
+@login_required
+def make_wish(item_id):
+    """исполнить (зарезервировать) желание"""
+    conn = cn.get_connection()
+    curs = conn.cursor()
+    sql = 'UPDATE item ' \
+          'SET giver_id = %s ' \
+          'WHERE item_id = %s;'
+    curs.execute(sql, (current_user.user_id, item_id,))
+    result = curs.fetchall()
+    conn.close()
+    return render_template('add_wish.html', wish=result)

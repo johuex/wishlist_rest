@@ -76,7 +76,7 @@ class User(UserMixin):
         на входе id друга"""
         conn = cn.get_connection()
         curs = conn.cursor()
-        sql = 'DELETE FROM friendship WHERE (user_id_1 = %s and user_id_2 = %s) or (user_id_2 = %s and user_id_1 = %s);'
+        sql = 'DELETE FROM friendship WHERE (user_id_1 = %s and user_id_2 = %s) OR (user_id_1 = %s and user_id_2 = %s);'
         curs.execute(sql, (self.user_id, user_2, user_2, self.user_id,))
         conn.commit()
         conn.close()
