@@ -3,7 +3,8 @@ import io
 
 from flask import render_template, flash, redirect, url_for, request, make_response
 from app import app
-from app.forms import LoginForm, RegistrationForm, EditProfileForm, ChangePasswordForm, EditWishForm, AddWishForm
+from app.forms import LoginForm, RegistrationForm, EditProfileForm, ChangePasswordForm, EditWishForm, AddWishForm, \
+    AddWishListForm, EditWishListForm
 from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.security import generate_password_hash
 from werkzeug.urls import url_parse
@@ -477,14 +478,37 @@ def add_wish(nickname):
         return redirect(url_for('all_item', nickname=nickname))
     return render_template('add_wish.html', form=form)
 
+
 @app.route("/<nickname>/add_wishlist")
 @login_required
 def add_wishlist(nickname):
-    """добавить список желаний"""
-    form = AddWishlistForm()
+    """создать список желаний"""
+    form = AddWishListForm()
+    '''одно и тоже желание может находится в нескольких списках
+    при этом в список можно добавить незарезервированные желания'''
+    conn = cn.get_connection()
+    curs = conn.cursor()
+    sql = 'SELECT item_id , title '\
+          'FROM item JOIN user_item USING (item_id) ' \
+          'WHERE user_id = %s AND giver_id IS NULL;'
+    curs.execute(sql, (current_user.user_id,))
+    form.wishes.choices = [(i["item_id"], i["title"]) for i in curs.fetchall()]
     if form.validate_on_submit():
-        pass
-    return render_template()
+        # заливаем список
+        sql = 'INSERT INTO wishlist (title, about, access_level, user_id) VALUES (%s, %s, %s, %s) RETURNING list_id;'
+        curs.execute(sql, (form.title.data, form.about.data, form.access_level.data, current_user.user_id,))
+        result = curs.fetchone()
+        if len(form.wishes.data) > 0:
+            # связываем список и желания в нем (если в список были добавлены желания)
+            sql = 'INSERT INTO item_list(list_id, item_id) VALUES (%s, %s);'
+            for item_id in form.wishes.data:
+                curs.execute(sql, (result["list_id"], item_id,))
+        conn.commit()
+        conn.close()
+        flash('New wish was added!')
+        return redirect(url_for('all_item', nickname=nickname))
+    conn.close()
+    return render_template('add_wishlist.html', form=form)
 
 
 @app.route('/<item_id>/edit', methods=['GET', 'POST'])
@@ -531,16 +555,40 @@ def edit_wish(item_id):
 @login_required
 def edit_wishlist(list_id):
     """изменение данных желания"""
-
-    conn = cn.get_connection()
-    curs = conn.cursor()
-    sql = 'SELECT * ' \
-          'FROM item ' \
-          'WHERE item_id = %s);'
-    curs.execute(sql, (list_id,))
-    result = curs.fetchall()
-    conn.close()
-    return render_template('add_wish.html', wish=result)
+    # TODO доделать логику
+    form = EditWishListForm()
+    if form.validate_on_submit():
+        # если изменили информацию и она прошла валидацию, то данные записываются в БД
+        conn = cn.get_connection()
+        curs = conn.cursor()
+        sql = 'UPDATE wishlist ' \
+              'SET title = %s, about = %s, access_level = %s ' \
+              'WHERE list_id = %s;'
+        curs.execute(sql, (form.title.data, form.about.data, form.access_level.data, list_id,))
+        if len(form.wishes.data) > 0:
+            # связываем список и желания в нем (если в список были добавлены желания)
+            sql = 'INSERT INTO item_list(list_id, item_id) VALUES (%s, %s);'
+            for item_id in form.wishes.data:
+                curs.execute(sql, (list_id, item_id,))
+        conn.commit()
+        conn.close()
+        flash('Your changes have been saved.')
+        return render_template('edit_wishlist.html', form=form, title=form.title.data)
+    elif request.method == 'GET':
+        conn = cn.get_connection()
+        curs = conn.cursor()
+        sql = 'SELECT title, about, access_level ' \
+              'FROM wishlist ' \
+              'WHERE list_id = %s;'
+        curs.execute(sql, (list_id,))
+        result = curs.fetchone()
+        conn.commit()
+        conn.close()
+        # если метод GET, то в формы записываем данные пользователя
+        form.title.data = result["title"]
+        form.about.data = result["about"]
+        form.access_level.data = result["access_level"]
+    return render_template('edit_wishlist.html', form=form, title=form.title.data)
 
 
 @app.route('/<item_id>/delete')
@@ -572,3 +620,10 @@ def make_wish(item_id):
     flash('You select a wish!')
     conn.close()
     return redirect(url_for('presents'))
+
+
+@app.route('/<item_id>/fullfiled')
+@login_required
+def wish_fullfiled():
+    """пользователь отмечает, что зарезервированное ранее желание исполнено"""
+    pass

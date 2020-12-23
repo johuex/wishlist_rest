@@ -1,11 +1,11 @@
 """модуль для хранения классов веб-форм"""
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField, FileField, SelectField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField, FileField, SelectField, \
+    SelectMultipleField
 from wtforms.validators import DataRequired, ValidationError, Email, EqualTo, Length
 import phonenumbers
 import datetime
 import connectDB as cn
-from werkzeug.security import generate_password_hash
 from flask_login import current_user
 
 
@@ -168,10 +168,22 @@ class AddWishForm(FlaskForm):
                          validate_choice=True)
     submit = SubmitField('Submit')
 
+
 class AddWishListForm(FlaskForm):
     """форма добавления списка желаний"""
-    title = StringField()
-    about = TextAreaField()
+    title = StringField('Title', validators=[DataRequired()])
+    about = TextAreaField('Tell something about this list', validators=[Length(min=0, max=250)])
     access_level = BooleanField()
-    pass
     submit = SubmitField('Submit')
+    wishes = SelectMultipleField(
+        'Add your already created wishes to the list ', validate_choice=False)  # поле выбора какие желания добавить в списке
+
+
+class EditWishListForm(FlaskForm):
+    """форма изменения списка желаний"""
+    title = StringField('Title', validators=[DataRequired()])
+    about = TextAreaField('Tell something about this list', validators=[Length(min=0, max=250)])
+    access_level = BooleanField()
+    submit = SubmitField('Submit')
+    wishes = SelectMultipleField(
+        'Add your already created wishes to the list ', validate_choice=False)  # поле выбора какие желания добавить в списке

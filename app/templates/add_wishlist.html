@@ -1,7 +1,8 @@
+<!--добавление списка пользователя-->
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>Edit wishlist: {{ title }} </h1>
+    <h1>Add new wishlist</h1>
     <form action="" method="post"  novalidate>
         {{ form.hidden_tag() }}
         <p>
@@ -13,7 +14,7 @@
         </p>
         <p>
             {{ form.about.label }}<br>
-            {{ form.about(size=32) }}<br>
+            {{ form.about(size=64) }}<br>
             {% for error in form.about.errors %} <!--для отображения ошибок-->
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
@@ -26,20 +27,11 @@
             {% endfor %}
         </p>
         <p>
-            {{ form.picture.label }}<br>
-            {{ form.picture(size=32) }}<br>
-            {% for error in form.picture.errors %} <!--для отображения ошибок-->
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.degree.label }}<br>
-            {{ form.degree }}<br>
             {% for error in form.degree.errors %} <!--для отображения ошибок-->
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>
         <p>{{ form.submit() }}</p>
     </form>
-    <hr>
-{% endblock %}
+
+ {% endblock %}
