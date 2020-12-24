@@ -176,7 +176,7 @@ class AddWishListForm(FlaskForm):
     access_level = BooleanField()
     submit = SubmitField('Submit')
     wishes = SelectMultipleField(
-        'Add your already created wishes to the list ', validate_choice=False)  # поле выбора какие желания добавить в списке
+        'Add your already created wishes to the list ', validate_choice=False, coerce=int)  # поле выбора какие желания добавить в списке
 
 
 class EditWishListForm(FlaskForm):
@@ -186,4 +186,4 @@ class EditWishListForm(FlaskForm):
     access_level = BooleanField()
     submit = SubmitField('Submit')
     wishes = SelectMultipleField(
-        'Add your already created wishes to the list ', validate_choice=False)  # поле выбора какие желания добавить в списке
+        'Add your already created wishes to the list ', validate_choice=False, coerce=int)  # поле выбора какие желания добавить в списке

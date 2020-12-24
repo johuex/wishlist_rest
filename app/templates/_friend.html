@@ -4,7 +4,7 @@
         <td bgcolor="#a9a9a9"> <a href="{{ url_for('user_profile', nickname = friend.nickname) }}">{{ friend.user_name }} {{ friend.surname }}</a> </td>
     </tr>
     <tr valign="top">
-        <td bgcolor="#a9a9a9"> <a href="{{ url_for('user_profile', nickname = friend.nickname) }}"><img src="{{ friend.userpic }}"></a> </td> <!--картинка-->
+        <td bgcolor="#a9a9a9"> <a href="{{ url_for('user_profile', nickname = friend.nickname) }}"><img src="{{ friend.userpic }} " width="50" height="50"></a> </td> <!--картинка-->
         <td bgcolor="#a9a9a9"> <a href="{{ url_for('all_item', nickname = friend.nickname) }}">{{ friend.user_name }}'s wishes</a></td> <!--желания-->
     </tr>
 </table>

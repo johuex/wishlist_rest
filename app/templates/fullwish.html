@@ -5,7 +5,7 @@
     {% if current_user.nickname == nickname%}
         <h2> Yours wishlists and wishes </h2>
         <a href="{{ url_for('add_wish', nickname = nickname) }}">Add wish</a>
-        <a href="{{ url_for('add_wish', nickname = nickname) }}">Add wishlist</a>
+        <a href="{{ url_for('add_wishlist', nickname = nickname) }}">Add wishlist</a>
     {% else %}
         <h2> {{ nickname }}'s wishlists and wishes</h2>
     {% endif %}

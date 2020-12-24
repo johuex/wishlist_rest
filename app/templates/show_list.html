@@ -6,17 +6,26 @@
     {% if wishlist %}
         <table>
             <tr valign="top">
-                <td bgcolor="#a9a9a9"><img src="{{ wish.picture }}"></td> <!--картинка-->
-                <td bgcolor="#a9a9a9"> {{ wish.about }} </td> <!--описание-->
+                <td bgcolor="#a9a9a9"><img src="{{ wishlist.picture }}"></td> <!--картинка-->
+                <td bgcolor="#a9a9a9"> {{ wishlist.about }} </td> <!--описание-->
+                <td bgcolor="#a9a9a9"><p><a href="{{ url_for('edit_wishlist', list_id=wishlist.list_id) }}"> Edit wishlist </a></p></td> <!--редактировать-->
                 </tr>
         </table>
         <hr>
         <h2>Wishes in list: </h2>
         <br>
         {% if wish_items %}
-            {% for wish_item in wishes %}
-                {% include '_wish2.html' %}
+            <table>
+            {% for wish in wish_items %}
+                <tr valign="top">
+                    <td bgcolor="#a9a9a9"><img src="{{ wish.picture }}" width="50" height="50"></td> <!--картинка-->
+                    <td bgcolor="#a9a9a9"><a href="{{ url_for('wish_item', item_id = wish.item_id) }}"> {{ wish.title}} </a></td> <!--заголовок-->
+                {% if current_user.nickname == nickname and wish_item.giver_id is none%} <!--запрет на редактирование, если giver_id уже есть-->
+                    <td bgcolor="#a9a9a9"><a href="{{ url_for('edit_wish', item_id = wish.item_id) }}"> Edit wish</a></td> <!--заголовок-->
+                {% endif %}
+                </tr>
             {% endfor %}
+            </table>
         {% else %}
             No wishes in this list
         {% endif %}

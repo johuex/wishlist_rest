@@ -27,7 +27,9 @@
             {% endfor %}
         </p>
         <p>
-            {% for error in form.degree.errors %} <!--для отображения ошибок-->
+            {{ form.wishes.label }}<br>
+            {{ form.wishes(size=32) }}<br>
+            {% for error in form.wishes.errors %} <!--для отображения ошибок-->
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>

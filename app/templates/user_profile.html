@@ -3,7 +3,7 @@
 {% block content %}
     <table> <!--аватар пользователя-->
         <tr valign="top">
-            <td> <img src="{{ url_for('static',filename='images/userpic.png') }}"> </td>
+            <td> <img src="{{user.userpic}}" width="100" height="100"> </td>
             <td>
                 {% if user %}
                 <h1>User: {{ user.nickname }}</h1>

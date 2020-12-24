@@ -3,12 +3,12 @@
     <head>
         <title>WishList</title>
         <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+        <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}" />
     </head>
     <body>
     <!--TODO CSS стили для блоков-->
         <!--Top Bar-->
         <div id="header">
-            Microblog:
             <a href="{{ url_for('index') }}">Main</a>
 
             {% if current_user.is_anonymous %}
