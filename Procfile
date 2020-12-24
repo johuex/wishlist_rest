@@ -1,1 +1,1 @@
-web: gunicorn wlist:app
+web: python run.py
