@@ -9,6 +9,8 @@ import connectDB as cn
 
 app = Flask(__name__)
 app.config.from_object(Config)
+app.jinja_env.trim_blocks = True
+app.jinja_env.lstrip_blocks = True
 login = LoginManager(app)
 login.login_view = 'login'  # перенаправим на login, если просмотр страницы требует авторизации
 
