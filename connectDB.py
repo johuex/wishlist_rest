@@ -10,6 +10,7 @@ password = url.password
 host = url.hostname
 port = url.port
 
+
 def get_connection():
     conn = psycopg2.connect(
                             #dbname="wlist",
