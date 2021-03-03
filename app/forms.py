@@ -76,7 +76,6 @@ class EditProfileForm(FlaskForm):
     user_name = StringField('Your name', validators=[DataRequired()])
     surname = StringField('Your surname', validators=[DataRequired()])
     nickname = StringField('Your nickname', validators=[DataRequired()])
-    #TODO userpic_form + editing in routes "edit_profile"
     birthday = StringField('Birthday', validators=[DataRequired()])
     email = StringField('Email', validators=[DataRequired(), Email()])
     phone_number = StringField('Phone_number', validators=[DataRequired()])
@@ -107,7 +106,6 @@ class EditProfileForm(FlaskForm):
 
     def validate_birthday(self, birthday):
         """проверка формата введенного ДР"""
-        # TODO что с форматом ДР
         format_date = "%d/%m/%Y"
         try:
             datetime.datetime.strptime(birthday.data, format_date)
@@ -148,7 +146,6 @@ class EditWishForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired()])
     about = TextAreaField('Tell something about your wish', validators=[Length(min=0, max=250)])
     access_level = BooleanField('Opened for others', false_values=(False,))
-    # TODO форма для picture
     picture = FileField('Picture')
     degree = SelectField('Degree of wish desire',
                          choices=[(1, 'I really really want it'), (2, 'I really want it'), (3, 'I want it'),
@@ -161,7 +158,6 @@ class AddWishForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired()])
     about = TextAreaField('Tell something about your wish', validators=[Length(min=0, max=250)])
     access_level = BooleanField('Opened for others', default='checked', false_values=(False,))
-    # TODO форма для picture
     picture = FileField('Picture')
     degree = SelectField('Degree of wish desire', choices=[(1, 'I really really want it'), (2, 'I really want it'), (3, 'I want it'),
                                                            (4, 'I do not really want it'), (5, 'I do not want it')],

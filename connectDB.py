@@ -21,3 +21,4 @@ def get_connection():
                             cursor_factory=DictCursor
                             )
     return conn
+ # TODO реализовать функцию реализации запроса

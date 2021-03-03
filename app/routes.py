@@ -56,8 +56,7 @@ def login():
             user = User(result['user_id'], result['phone_number'], result['user_name'], result['surname'],
                         result['userpic'],
                         result['about'], result['birthday'], result['password_hash'], result['nickname'],
-                        result['email'],
-                        result["last_seen"])
+                        result['email'], result["last_seen"])
         if user is None or not user.check_password(form.password.data):
             flash('Invalid username or password')
             return redirect(url_for('login'))

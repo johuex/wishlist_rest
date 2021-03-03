@@ -4,7 +4,7 @@ create table users
 		constraint users_pk
 			primary key,
 	phone_number varchar(20),
-	user_name varchar(50) not null,
+	username varchar(50) not null,
 	surname varchar(50),
 	userpic text,
 	about varchar(1000),
@@ -22,6 +22,12 @@ create unique index users_email_uindex
 
 create unique index users_nickname_uindex
 	on users (nickname);
+
+create unique index users_phone_number_uindex
+	on users (phone_number);
+
+create unique index users_token_uindex
+	on users (token);
 
 create table wishlist
 (

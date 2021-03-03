@@ -1,19 +1,27 @@
-import logging
-from logging.handlers import SMTPHandler, RotatingFileHandler
-import os
+
 from flask import Flask
 from config import Config
 from flask_login import LoginManager
-import connectDB as cn
 
 
-app = Flask(__name__)
-app.config.from_object(Config)
-app.jinja_env.trim_blocks = True
-app.jinja_env.lstrip_blocks = True
-login = LoginManager(app)
-login.login_view = 'login'  # перенаправим на login, если просмотр страницы требует авторизации
+login = LoginManager()
+login.login_view = 'auth.login'
+login.login_message = 'Please log in to access this page.'
 
+
+def create_app(config_class=Config):
+    app = Flask(__name__)
+    app.config.from_object(Config)
+    app.jinja_env.trim_blocks = True
+    app.jinja_env.lstrip_blocks = True
+    login.init_app(app)
+
+    from app.api import bp as api_bp
+    app.register_blueprint(api_bp, url_prefix='/api')
+
+    return app
+
+'''
 # ведение журнала логирования и отправка на почту ошибок при работе не в debug mode
 if not app.debug:
     if app.config['MAIL_SERVER']:
@@ -42,6 +50,6 @@ if not app.debug:
 
     app.logger.setLevel(logging.INFO)
     app.logger.info('Wishlist startup')
-
+'''
 
 from app import routes, models, errors
