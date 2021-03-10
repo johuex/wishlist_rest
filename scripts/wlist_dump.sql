@@ -21,7 +21,7 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
--- Name: degree_of_desire; Type: TABLE; Schema: public; Owner: postgres
+-- Name: degree_of_desire; Type: TABLE; Schema: public; Owner: johuex
 --
 
 CREATE TABLE public.degree_of_desire (
@@ -30,10 +30,10 @@ CREATE TABLE public.degree_of_desire (
 );
 
 
-ALTER TABLE public.degree_of_desire OWNER TO postgres;
+ALTER TABLE public.degree_of_desire OWNER TO johuex;
 
 --
--- Name: friend_requests; Type: TABLE; Schema: public; Owner: postgres
+-- Name: friend_requests; Type: TABLE; Schema: public; Owner: johuex
 --
 
 CREATE TABLE public.friend_requests (
@@ -42,10 +42,10 @@ CREATE TABLE public.friend_requests (
 );
 
 
-ALTER TABLE public.friend_requests OWNER TO postgres;
+ALTER TABLE public.friend_requests OWNER TO johuex;
 
 --
--- Name: friendship; Type: TABLE; Schema: public; Owner: postgres
+-- Name: friendship; Type: TABLE; Schema: public; Owner: johuex
 --
 
 CREATE TABLE public.friendship (
@@ -54,10 +54,10 @@ CREATE TABLE public.friendship (
 );
 
 
-ALTER TABLE public.friendship OWNER TO postgres;
+ALTER TABLE public.friendship OWNER TO johuex;
 
 --
--- Name: group; Type: TABLE; Schema: public; Owner: postgres
+-- Name: group; Type: TABLE; Schema: public; Owner: johuex
 --
 
 CREATE TABLE public."group" (
@@ -68,10 +68,10 @@ CREATE TABLE public."group" (
 );
 
 
-ALTER TABLE public."group" OWNER TO postgres;
+ALTER TABLE public."group" OWNER TO johuex;
 
 --
--- Name: group_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: group_id_seq; Type: SEQUENCE; Schema: public; Owner: johuex
 --
 
 CREATE SEQUENCE public.group_id_seq
@@ -83,17 +83,17 @@ CREATE SEQUENCE public.group_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.group_id_seq OWNER TO postgres;
+ALTER TABLE public.group_id_seq OWNER TO johuex;
 
 --
--- Name: group_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: group_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: johuex
 --
 
 ALTER SEQUENCE public.group_id_seq OWNED BY public."group".id;
 
 
 --
--- Name: group_list; Type: TABLE; Schema: public; Owner: postgres
+-- Name: group_list; Type: TABLE; Schema: public; Owner: johuex
 --
 
 CREATE TABLE public.group_list (
@@ -102,10 +102,10 @@ CREATE TABLE public.group_list (
 );
 
 
-ALTER TABLE public.group_list OWNER TO postgres;
+ALTER TABLE public.group_list OWNER TO johuex;
 
 --
--- Name: group_user; Type: TABLE; Schema: public; Owner: postgres
+-- Name: group_user; Type: TABLE; Schema: public; Owner: johuex
 --
 
 CREATE TABLE public.group_user (
@@ -115,10 +115,10 @@ CREATE TABLE public.group_user (
 );
 
 
-ALTER TABLE public.group_user OWNER TO postgres;
+ALTER TABLE public.group_user OWNER TO johuex;
 
 --
--- Name: item; Type: TABLE; Schema: public; Owner: postgres
+-- Name: item; Type: TABLE; Schema: public; Owner: johuex
 --
 
 CREATE TABLE public.item (
@@ -133,10 +133,10 @@ CREATE TABLE public.item (
 );
 
 
-ALTER TABLE public.item OWNER TO postgres;
+ALTER TABLE public.item OWNER TO johuex;
 
 --
--- Name: item_group; Type: TABLE; Schema: public; Owner: postgres
+-- Name: item_group; Type: TABLE; Schema: public; Owner: johuex
 --
 
 CREATE TABLE public.item_group (
@@ -145,10 +145,10 @@ CREATE TABLE public.item_group (
 );
 
 
-ALTER TABLE public.item_group OWNER TO postgres;
+ALTER TABLE public.item_group OWNER TO johuex;
 
 --
--- Name: item_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: item_id_seq; Type: SEQUENCE; Schema: public; Owner: johuex
 --
 
 CREATE SEQUENCE public.item_id_seq
@@ -160,17 +160,17 @@ CREATE SEQUENCE public.item_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.item_id_seq OWNER TO postgres;
+ALTER TABLE public.item_id_seq OWNER TO johuex;
 
 --
--- Name: item_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: item_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: johuex
 --
 
 ALTER SEQUENCE public.item_id_seq OWNED BY public.item.id;
 
 
 --
--- Name: item_list; Type: TABLE; Schema: public; Owner: postgres
+-- Name: item_list; Type: TABLE; Schema: public; Owner: johuex
 --
 
 CREATE TABLE public.item_list (
@@ -179,10 +179,10 @@ CREATE TABLE public.item_list (
 );
 
 
-ALTER TABLE public.item_list OWNER TO postgres;
+ALTER TABLE public.item_list OWNER TO johuex;
 
 --
--- Name: item_picture; Type: TABLE; Schema: public; Owner: postgres
+-- Name: item_picture; Type: TABLE; Schema: public; Owner: johuex
 --
 
 CREATE TABLE public.item_picture (
@@ -191,10 +191,10 @@ CREATE TABLE public.item_picture (
 );
 
 
-ALTER TABLE public.item_picture OWNER TO postgres;
+ALTER TABLE public.item_picture OWNER TO johuex;
 
 --
--- Name: user_item; Type: TABLE; Schema: public; Owner: postgres
+-- Name: user_item; Type: TABLE; Schema: public; Owner: johuex
 --
 
 CREATE TABLE public.user_item (
@@ -203,10 +203,10 @@ CREATE TABLE public.user_item (
 );
 
 
-ALTER TABLE public.user_item OWNER TO postgres;
+ALTER TABLE public.user_item OWNER TO johuex;
 
 --
--- Name: users; Type: TABLE; Schema: public; Owner: postgres
+-- Name: users; Type: TABLE; Schema: public; Owner: johuex
 --
 
 CREATE TABLE public.users (
@@ -226,10 +226,10 @@ CREATE TABLE public.users (
 );
 
 
-ALTER TABLE public.users OWNER TO postgres;
+ALTER TABLE public.users OWNER TO johuex;
 
 --
--- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: johuex
 --
 
 CREATE SEQUENCE public.users_id_seq
@@ -241,17 +241,17 @@ CREATE SEQUENCE public.users_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.users_id_seq OWNER TO postgres;
+ALTER TABLE public.users_id_seq OWNER TO johuex;
 
 --
--- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: johuex
 --
 
 ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
 
 
 --
--- Name: wishlist; Type: TABLE; Schema: public; Owner: postgres
+-- Name: wishlist; Type: TABLE; Schema: public; Owner: johuex
 --
 
 CREATE TABLE public.wishlist (
@@ -263,10 +263,10 @@ CREATE TABLE public.wishlist (
 );
 
 
-ALTER TABLE public.wishlist OWNER TO postgres;
+ALTER TABLE public.wishlist OWNER TO johuex;
 
 --
--- Name: wishlist_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: wishlist_id_seq; Type: SEQUENCE; Schema: public; Owner: johuex
 --
 
 CREATE SEQUENCE public.wishlist_id_seq
@@ -278,45 +278,45 @@ CREATE SEQUENCE public.wishlist_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.wishlist_id_seq OWNER TO postgres;
+ALTER TABLE public.wishlist_id_seq OWNER TO johuex;
 
 --
--- Name: wishlist_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: wishlist_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: johuex
 --
 
 ALTER SEQUENCE public.wishlist_id_seq OWNED BY public.wishlist.id;
 
 
 --
--- Name: group id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: group id; Type: DEFAULT; Schema: public; Owner: johuex
 --
 
 ALTER TABLE ONLY public."group" ALTER COLUMN id SET DEFAULT nextval('public.group_id_seq'::regclass);
 
 
 --
--- Name: item id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: item id; Type: DEFAULT; Schema: public; Owner: johuex
 --
 
 ALTER TABLE ONLY public.item ALTER COLUMN id SET DEFAULT nextval('public.item_id_seq'::regclass);
 
 
 --
--- Name: users id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: users id; Type: DEFAULT; Schema: public; Owner: johuex
 --
 
 ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_id_seq'::regclass);
 
 
 --
--- Name: wishlist id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: wishlist id; Type: DEFAULT; Schema: public; Owner: johuex
 --
 
 ALTER TABLE ONLY public.wishlist ALTER COLUMN id SET DEFAULT nextval('public.wishlist_id_seq'::regclass);
 
 
 --
--- Data for Name: degree_of_desire; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: degree_of_desire; Type: TABLE DATA; Schema: public; Owner: johuex
 --
 
 COPY public.degree_of_desire (item_id, degree) FROM stdin;
@@ -324,7 +324,7 @@ COPY public.degree_of_desire (item_id, degree) FROM stdin;
 
 
 --
--- Data for Name: friend_requests; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: friend_requests; Type: TABLE DATA; Schema: public; Owner: johuex
 --
 
 COPY public.friend_requests (user_id_from, user_id_to) FROM stdin;
@@ -332,7 +332,7 @@ COPY public.friend_requests (user_id_from, user_id_to) FROM stdin;
 
 
 --
--- Data for Name: friendship; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: friendship; Type: TABLE DATA; Schema: public; Owner: johuex
 --
 
 COPY public.friendship (user_id_1, user_id_2) FROM stdin;
@@ -340,7 +340,7 @@ COPY public.friendship (user_id_1, user_id_2) FROM stdin;
 
 
 --
--- Data for Name: group; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: group; Type: TABLE DATA; Schema: public; Owner: johuex
 --
 
 COPY public."group" (id, title, about, date) FROM stdin;
@@ -348,7 +348,7 @@ COPY public."group" (id, title, about, date) FROM stdin;
 
 
 --
--- Data for Name: group_list; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: group_list; Type: TABLE DATA; Schema: public; Owner: johuex
 --
 
 COPY public.group_list (group_id, list_id) FROM stdin;
@@ -356,7 +356,7 @@ COPY public.group_list (group_id, list_id) FROM stdin;
 
 
 --
--- Data for Name: group_user; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: group_user; Type: TABLE DATA; Schema: public; Owner: johuex
 --
 
 COPY public.group_user (group_id, user_id, role_in_group) FROM stdin;
@@ -364,7 +364,7 @@ COPY public.group_user (group_id, user_id, role_in_group) FROM stdin;
 
 
 --
--- Data for Name: item; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: item; Type: TABLE DATA; Schema: public; Owner: johuex
 --
 
 COPY public.item (id, title, about, access_level, status, giver_id, date_creation, date_for_status) FROM stdin;
@@ -372,7 +372,7 @@ COPY public.item (id, title, about, access_level, status, giver_id, date_creatio
 
 
 --
--- Data for Name: item_group; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: item_group; Type: TABLE DATA; Schema: public; Owner: johuex
 --
 
 COPY public.item_group (group_id, item_id) FROM stdin;
@@ -380,7 +380,7 @@ COPY public.item_group (group_id, item_id) FROM stdin;
 
 
 --
--- Data for Name: item_list; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: item_list; Type: TABLE DATA; Schema: public; Owner: johuex
 --
 
 COPY public.item_list (list_id, item_id) FROM stdin;
@@ -388,7 +388,7 @@ COPY public.item_list (list_id, item_id) FROM stdin;
 
 
 --
--- Data for Name: item_picture; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: item_picture; Type: TABLE DATA; Schema: public; Owner: johuex
 --
 
 COPY public.item_picture (item_id, path_to_picture) FROM stdin;
@@ -396,7 +396,7 @@ COPY public.item_picture (item_id, path_to_picture) FROM stdin;
 
 
 --
--- Data for Name: user_item; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: user_item; Type: TABLE DATA; Schema: public; Owner: johuex
 --
 
 COPY public.user_item (user_id, item_id) FROM stdin;
@@ -404,7 +404,7 @@ COPY public.user_item (user_id, item_id) FROM stdin;
 
 
 --
--- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: johuex
 --
 
 COPY public.users (id, phone_number, username, surname, userpic, about, birthday, password_hash, nickname, email, token, token_expiration, last_seen) FROM stdin;
@@ -412,7 +412,7 @@ COPY public.users (id, phone_number, username, surname, userpic, about, birthday
 
 
 --
--- Data for Name: wishlist; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: wishlist; Type: TABLE DATA; Schema: public; Owner: johuex
 --
 
 COPY public.wishlist (id, user_id, title, about, access_level) FROM stdin;
@@ -420,35 +420,35 @@ COPY public.wishlist (id, user_id, title, about, access_level) FROM stdin;
 
 
 --
--- Name: group_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: group_id_seq; Type: SEQUENCE SET; Schema: public; Owner: johuex
 --
 
 SELECT pg_catalog.setval('public.group_id_seq', 1, false);
 
 
 --
--- Name: item_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: item_id_seq; Type: SEQUENCE SET; Schema: public; Owner: johuex
 --
 
 SELECT pg_catalog.setval('public.item_id_seq', 1, false);
 
 
 --
--- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: johuex
 --
 
 SELECT pg_catalog.setval('public.users_id_seq', 1, false);
 
 
 --
--- Name: wishlist_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: wishlist_id_seq; Type: SEQUENCE SET; Schema: public; Owner: johuex
 --
 
 SELECT pg_catalog.setval('public.wishlist_id_seq', 1, false);
 
 
 --
--- Name: degree_of_desire degree_of_desire_pk; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: degree_of_desire degree_of_desire_pk; Type: CONSTRAINT; Schema: public; Owner: johuex
 --
 
 ALTER TABLE ONLY public.degree_of_desire
@@ -456,7 +456,7 @@ ALTER TABLE ONLY public.degree_of_desire
 
 
 --
--- Name: friend_requests friend_requests_pk; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: friend_requests friend_requests_pk; Type: CONSTRAINT; Schema: public; Owner: johuex
 --
 
 ALTER TABLE ONLY public.friend_requests
@@ -464,7 +464,7 @@ ALTER TABLE ONLY public.friend_requests
 
 
 --
--- Name: friendship friendship_pk; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: friendship friendship_pk; Type: CONSTRAINT; Schema: public; Owner: johuex
 --
 
 ALTER TABLE ONLY public.friendship
@@ -472,7 +472,7 @@ ALTER TABLE ONLY public.friendship
 
 
 --
--- Name: group_list group_list_pk; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: group_list group_list_pk; Type: CONSTRAINT; Schema: public; Owner: johuex
 --
 
 ALTER TABLE ONLY public.group_list
@@ -480,7 +480,7 @@ ALTER TABLE ONLY public.group_list
 
 
 --
--- Name: group group_pk; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: group group_pk; Type: CONSTRAINT; Schema: public; Owner: johuex
 --
 
 ALTER TABLE ONLY public."group"
@@ -488,7 +488,7 @@ ALTER TABLE ONLY public."group"
 
 
 --
--- Name: group_user group_user_pk; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: group_user group_user_pk; Type: CONSTRAINT; Schema: public; Owner: johuex
 --
 
 ALTER TABLE ONLY public.group_user
@@ -496,7 +496,7 @@ ALTER TABLE ONLY public.group_user
 
 
 --
--- Name: item_group item_group_pk; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: item_group item_group_pk; Type: CONSTRAINT; Schema: public; Owner: johuex
 --
 
 ALTER TABLE ONLY public.item_group
@@ -504,7 +504,7 @@ ALTER TABLE ONLY public.item_group
 
 
 --
--- Name: item_list item_list_pk; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: item_list item_list_pk; Type: CONSTRAINT; Schema: public; Owner: johuex
 --
 
 ALTER TABLE ONLY public.item_list
@@ -512,7 +512,7 @@ ALTER TABLE ONLY public.item_list
 
 
 --
--- Name: item_picture item_picture_pk; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: item_picture item_picture_pk; Type: CONSTRAINT; Schema: public; Owner: johuex
 --
 
 ALTER TABLE ONLY public.item_picture
@@ -520,7 +520,7 @@ ALTER TABLE ONLY public.item_picture
 
 
 --
--- Name: item item_pk; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: item item_pk; Type: CONSTRAINT; Schema: public; Owner: johuex
 --
 
 ALTER TABLE ONLY public.item
@@ -528,7 +528,7 @@ ALTER TABLE ONLY public.item
 
 
 --
--- Name: user_item user_item_pk; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: user_item user_item_pk; Type: CONSTRAINT; Schema: public; Owner: johuex
 --
 
 ALTER TABLE ONLY public.user_item
@@ -536,7 +536,7 @@ ALTER TABLE ONLY public.user_item
 
 
 --
--- Name: users users_pk; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: users users_pk; Type: CONSTRAINT; Schema: public; Owner: johuex
 --
 
 ALTER TABLE ONLY public.users
@@ -544,7 +544,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- Name: wishlist wishlist_pk; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: wishlist wishlist_pk; Type: CONSTRAINT; Schema: public; Owner: johuex
 --
 
 ALTER TABLE ONLY public.wishlist
@@ -552,28 +552,28 @@ ALTER TABLE ONLY public.wishlist
 
 
 --
--- Name: users_email_uindex; Type: INDEX; Schema: public; Owner: postgres
+-- Name: users_email_uindex; Type: INDEX; Schema: public; Owner: johuex
 --
 
 CREATE UNIQUE INDEX users_email_uindex ON public.users USING btree (email);
 
 
 --
--- Name: users_nickname_uindex; Type: INDEX; Schema: public; Owner: postgres
+-- Name: users_nickname_uindex; Type: INDEX; Schema: public; Owner: johuex
 --
 
 CREATE UNIQUE INDEX users_nickname_uindex ON public.users USING btree (nickname);
 
 
 --
--- Name: users_token_uindex; Type: INDEX; Schema: public; Owner: postgres
+-- Name: users_token_uindex; Type: INDEX; Schema: public; Owner: johuex
 --
 
 CREATE UNIQUE INDEX users_token_uindex ON public.users USING btree (token);
 
 
 --
--- Name: degree_of_desire degree_of_desire_item_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: degree_of_desire degree_of_desire_item_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: johuex
 --
 
 ALTER TABLE ONLY public.degree_of_desire
@@ -581,7 +581,7 @@ ALTER TABLE ONLY public.degree_of_desire
 
 
 --
--- Name: friend_requests friend_requests_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: friend_requests friend_requests_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: johuex
 --
 
 ALTER TABLE ONLY public.friend_requests
@@ -589,7 +589,7 @@ ALTER TABLE ONLY public.friend_requests
 
 
 --
--- Name: friend_requests friend_requests_users_id_fk_2; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: friend_requests friend_requests_users_id_fk_2; Type: FK CONSTRAINT; Schema: public; Owner: johuex
 --
 
 ALTER TABLE ONLY public.friend_requests
@@ -597,7 +597,7 @@ ALTER TABLE ONLY public.friend_requests
 
 
 --
--- Name: friendship friendship_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: friendship friendship_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: johuex
 --
 
 ALTER TABLE ONLY public.friendship
@@ -605,7 +605,7 @@ ALTER TABLE ONLY public.friendship
 
 
 --
--- Name: friendship friendship_users_id_fk_2; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: friendship friendship_users_id_fk_2; Type: FK CONSTRAINT; Schema: public; Owner: johuex
 --
 
 ALTER TABLE ONLY public.friendship
@@ -613,7 +613,7 @@ ALTER TABLE ONLY public.friendship
 
 
 --
--- Name: group_list group_list_group_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: group_list group_list_group_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: johuex
 --
 
 ALTER TABLE ONLY public.group_list
@@ -621,7 +621,7 @@ ALTER TABLE ONLY public.group_list
 
 
 --
--- Name: group_list group_list_wishlist_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: group_list group_list_wishlist_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: johuex
 --
 
 ALTER TABLE ONLY public.group_list
@@ -629,7 +629,7 @@ ALTER TABLE ONLY public.group_list
 
 
 --
--- Name: group_user group_user_group_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: group_user group_user_group_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: johuex
 --
 
 ALTER TABLE ONLY public.group_user
@@ -637,7 +637,7 @@ ALTER TABLE ONLY public.group_user
 
 
 --
--- Name: group_user group_user_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: group_user group_user_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: johuex
 --
 
 ALTER TABLE ONLY public.group_user
@@ -645,7 +645,7 @@ ALTER TABLE ONLY public.group_user
 
 
 --
--- Name: item_group item_group_group_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: item_group item_group_group_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: johuex
 --
 
 ALTER TABLE ONLY public.item_group
@@ -653,7 +653,7 @@ ALTER TABLE ONLY public.item_group
 
 
 --
--- Name: item_group item_group_item_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: item_group item_group_item_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: johuex
 --
 
 ALTER TABLE ONLY public.item_group
@@ -661,7 +661,7 @@ ALTER TABLE ONLY public.item_group
 
 
 --
--- Name: item_list item_list_item_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: item_list item_list_item_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: johuex
 --
 
 ALTER TABLE ONLY public.item_list
@@ -669,7 +669,7 @@ ALTER TABLE ONLY public.item_list
 
 
 --
--- Name: item_list item_list_wishlist_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: item_list item_list_wishlist_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: johuex
 --
 
 ALTER TABLE ONLY public.item_list
@@ -677,7 +677,7 @@ ALTER TABLE ONLY public.item_list
 
 
 --
--- Name: item_picture item_picture_item_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: item_picture item_picture_item_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: johuex
 --
 
 ALTER TABLE ONLY public.item_picture
@@ -685,7 +685,7 @@ ALTER TABLE ONLY public.item_picture
 
 
 --
--- Name: item item_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: item item_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: johuex
 --
 
 ALTER TABLE ONLY public.item
@@ -693,7 +693,7 @@ ALTER TABLE ONLY public.item
 
 
 --
--- Name: user_item user_item_item_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: user_item user_item_item_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: johuex
 --
 
 ALTER TABLE ONLY public.user_item
@@ -701,7 +701,7 @@ ALTER TABLE ONLY public.user_item
 
 
 --
--- Name: user_item user_item_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: user_item user_item_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: johuex
 --
 
 ALTER TABLE ONLY public.user_item
@@ -709,7 +709,7 @@ ALTER TABLE ONLY public.user_item
 
 
 --
--- Name: wishlist wishlist_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: wishlist wishlist_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: johuex
 --
 
 ALTER TABLE ONLY public.wishlist

@@ -4,8 +4,9 @@ import phonenumbers
 from flask_login import current_user
 from flask_wtf import FlaskForm
 from wtforms import StringField, BooleanField, SubmitField, PasswordField, ValidationError
+from wtforms.validators import DataRequired, Email, EqualTo
+
 import connectDB as cn
-from app.models import User
 
 
 class LoginForm(FlaskForm):

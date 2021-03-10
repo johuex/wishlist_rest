@@ -187,7 +187,7 @@ class User(PaginatedAPIMixin, UserMixin):
         """ перевод данных из dict в User
 
         :param data: полученные данные
-        :param new_user: флаг регистрации
+        :param new_user: флаг регистрации - переводит пароль в хеш
         :return:
         """
         for field in ['username', 'nickname', 'email']:
@@ -195,6 +195,7 @@ class User(PaginatedAPIMixin, UserMixin):
                 setattr(self, field, data[field])
         if new_user and 'password' in data:
             self.set_password(data['password'])
+            self.last_seen = datetime.now().isoformat() + 'Z'
 
     def get_token(self, expires_in=3600):
         """ возвращает токен для авторизации
@@ -260,7 +261,7 @@ def load_user(user_id):
     """пользовательский загрузчик (связываем Flask-Login и БД)"""
     conn = cn.get_connection()
     cursor = conn.cursor()
-    sql = 'SELECT * FROM users WHERE user_id = %s;'
+    sql = 'SELECT * FROM users WHERE id = %s;'
     cursor.execute(sql, (int(user_id),))
     result = cursor.fetchone()
     cursor.close()

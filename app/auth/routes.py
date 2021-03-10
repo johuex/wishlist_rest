@@ -8,6 +8,7 @@ from werkzeug.utils import redirect
 import connectDB as cn
 from app.auth.forms import LoginForm, RegistrationForm, ChangePasswordForm
 from app.models import User
+from app.auth import bp
 
 
 @bp.route('/login', methods=['GET', 'POST'])
@@ -61,8 +62,8 @@ def register():
         user.set_password(form.password.data)
         conn = cn.get_connection()
         curs = conn.cursor()
-        sql = "INSERT INTO users (phone_number, user_name, surname, birthday, \
-        password_hash, nickname, email) VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING user_id;"
+        sql = "INSERT INTO users (phone_number, username, surname, birthday, \
+        password_hash, nickname, email) VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id;"
         curs.execute(sql, (form.phone_number.data, form.name.data, form.surname.data,
                            datetime.datetime.strptime(form.birthday.data, '%d/%m/%Y'),
                            generate_password_hash(form.password.data), form.nickname.data, form.email.data,))
@@ -77,6 +78,7 @@ def register():
         flash('Congratulations, you are now a registered user!')
         return redirect(url_for('login'))
     return render_template('register.html', title='Register', form=form)
+
 
 @bp.route('/change_password', methods=['GET', 'POST'])
 def change_password():

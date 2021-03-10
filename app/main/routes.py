@@ -18,17 +18,17 @@ def index():
     conn = cn.get_connection()
     curs = conn.cursor()
     # только открытые списки и открытые желания вне списков
-    sql = '''SELECT list_id AS id, title, NULL AS picture, 'list' AS types, nickname ''' \
-          'FROM wishlist JOIN users USING (user_id) ' \
-          'WHERE access_level = %s ' \
+    sql = '''SELECT wishlist.id AS id, title, NULL AS picture, 'list' AS types, users.nickname ''' \
+          'FROM wishlist JOIN users USING (id) ' \
+          'WHERE wishlist.access_level = %s ' \
           'UNION ' \
-          '''SELECT item.item_id AS id, title, picture, 'wish' AS types, nickname ''' \
+          '''SELECT item.id AS id, title, (SELECT path_to_picture FROM item_picture WHERE item_id = item.id), 'wish' AS types, users.nickname ''' \
           'FROM item JOIN user_item ' \
-          'ON item.item_id = user_item.item_id ' \
+          'ON item.id = user_item.item_id ' \
           'JOIN users ' \
-          'ON users.user_id = user_item.user_id ' \
-          'WHERE access_level = %s AND item.item_id NOT IN (SELECT item_id FROM item_list);'
-    curs.execute(sql, (True, True,))
+          'ON users.id = user_item.user_id ' \
+          'WHERE item.access_level = %s AND item.id NOT IN (SELECT item_id FROM item_list);'
+    curs.execute(sql, (0, 0,))
     result = curs.fetchall()
     conn.close()
     return render_template('index.html', wishes=result)
@@ -62,7 +62,7 @@ def user_profile(nickname):
         flash('User {} not found.'.format(nickname))
         return redirect(url_for('index'))
     else:
-        user = User(result['user_id'], result['phone_number'], result['user_name'], result['surname'],
+        user = User(result['id'], result['phone_number'], result['username'], result['surname'],
                     result['userpic'],
                     result['about'], result['birthday'], result['password_hash'], result['nickname'], result['email'])
     return render_template('user_profile.html', user=user)
@@ -86,7 +86,7 @@ def edit_profile():
         conn = cn.get_connection()
         curs = conn.cursor()
         sql = 'UPDATE users ' \
-              'SET user_name = %s, surname = %s, birthday = %s,' \
+              'SET username = %s, surname = %s, birthday = %s,' \
               'email = %s, phone_number = %s, about = %s, nickname = %s ' \
               'WHERE nickname = %s;'
         curs.execute(sql, (
@@ -117,14 +117,14 @@ def add_friend(nickname):
     """добавить пользователя в друзья (отправить запрос на дружбу)"""
     conn = cn.get_connection()
     curs = conn.cursor()
-    sql = "SELECT user_id FROM users WHERE nickname = %s;"
+    sql = "SELECT id FROM users WHERE nickname = %s;"
     curs.execute(sql, (nickname,))
     result = curs.fetchone()
     conn.close()
     if result is None:  # если пользователь не найден
         flash('User {} not found.'.format(nickname))
         return redirect(url_for('index'))
-    current_user.send_request(result['user_id'])
+    current_user.send_request(result['id'])
     flash('You have send friend request to {}!'.format(nickname))
     return redirect(url_for('user_profile', nickname=nickname))
 
@@ -135,14 +135,14 @@ def delete_friend(nickname):
     """удалить пользователя из друзей"""
     conn = cn.get_connection()
     curs = conn.cursor()
-    sql = "SELECT user_id FROM users WHERE nickname = %s;"
+    sql = "SELECT id FROM users WHERE nickname = %s;"
     curs.execute(sql, (nickname,))
     result = curs.fetchone()
     conn.close()
     if result is None:
         flash('User {} not found.'.format(nickname))
         return redirect(url_for('index'))
-    current_user.remove_friend(result['user_id'])
+    current_user.remove_friend(result['id'])
     flash('You and {} are not friends .'.format(nickname))
     return redirect(url_for('user_profile', nickname=nickname))
 
@@ -153,14 +153,14 @@ def cancel_request(nickname):
     """отменить запрос в друзья"""
     conn = cn.get_connection()
     curs = conn.cursor()
-    sql = "SELECT user_id FROM users WHERE nickname = %s;"
+    sql = "SELECT id FROM users WHERE nickname = %s;"
     curs.execute(sql, (nickname,))
     result = curs.fetchone()
     conn.close()
     if result is None:
         flash('User {} not found.'.format(nickname))
         return redirect(url_for('index'))
-    current_user.reject_request(result['user_id'])
+    current_user.reject_request(result['id'])
     flash('You canceled friend request to {} .'.format(nickname))
     return redirect(url_for('user_profile', nickname=nickname))
 
@@ -171,14 +171,14 @@ def accept_request(nickname):
     """принять запрос в друзья"""
     conn = cn.get_connection()
     curs = conn.cursor()
-    sql = "SELECT user_id FROM users WHERE nickname = %s;"
+    sql = "SELECT id FROM users WHERE nickname = %s;"
     curs.execute(sql, (nickname,))
     result = curs.fetchone()
     conn.close()
     if result is None:
         flash('User {} not found.'.format(nickname))
         return redirect(url_for('index'))
-    current_user.accept_request(result['user_id'])
+    current_user.accept_request(result['id'])
     flash('You and {} are friends now.'.format(nickname))
     return redirect(url_for('user_profile', nickname=nickname))
 
@@ -189,20 +189,20 @@ def news():
     """новости от друзей"""
     conn = cn.get_connection()
     curs = conn.cursor()
-    sql = '''SELECT list_id AS id, title, 'list' AS types, NULL AS picture ''' \
+    sql = '''SELECT wishlist.id AS id, title, 'list' AS types, NULL AS picture ''' \
           'FROM wishlist ' \
-          'WHERE access_level = %s and user_id IN' \
-          '     (SELECT user_id_2' \
+          'WHERE access_level = %s and id IN' \
+          '     (SELECT id_2' \
           '      FROM friendship' \
-          '      WHERE user_id_1 = %s) ' \
+          '      WHERE id_1 = %s) ' \
           'UNION ' \
-          '''SELECT item_id AS id, title, 'wish' AS types, picture ''' \
-          'FROM item JOIN user_item USING (item_id) ' \
-          'WHERE access_level = %s AND user_id IN' \
-          '     (SELECT user_id_2 ' \
+          '''SELECT item.id AS id, title, 'wish' AS types, picture ''' \
+          'FROM item JOIN user_item USING (id) ' \
+          'WHERE access_level = %s AND id IN' \
+          '     (SELECT id_2 ' \
           '      FROM friendship ' \
-          '      WHERE user_id_1 = %s) AND giver_id IS NULL AND item_id NOT IN (SELECT item_id FROM item_list);'
-    curs.execute(sql, (True, current_user.user_id, True, current_user.user_id,))
+          '      WHERE id_1 = %s) AND giver_id IS NULL AND item_id NOT IN (SELECT item_id FROM item_list);'
+    curs.execute(sql, (True, current_user.id, True, current_user.id,))
     result = curs.fetchall()
     conn.close()
     return render_template('friend_news.html', wishes=result)
@@ -215,22 +215,22 @@ def friends():
     conn = cn.get_connection()
     curs = conn.cursor()
     # запрос на друзей
-    sql = 'SELECT user_id, user_name, surname, userpic, nickname ' \
+    sql = 'SELECT id, user_name, surname, userpic, nickname ' \
           'FROM users ' \
-          'WHERE user_id IN (' \
+          'WHERE id IN (' \
           'SELECT user_id_2 ' \
           'FROM friendship ' \
           'WHERE user_id_1 = %s);'
-    curs.execute(sql, (current_user.user_id,))
+    curs.execute(sql, (current_user.id,))
     result = curs.fetchall()
     # запрос на запросы-дружбу
     sql = 'SELECT user_name, surname, userpic, nickname ' \
           'FROM users ' \
-          'WHERE user_id IN (' \
-          'SELECT user_id_from ' \
+          'WHERE id IN (' \
+          'SELECT id_from ' \
           'FROM friends_requests ' \
-          'WHERE user_id_to = %s);'
-    curs.execute(sql, (current_user.user_id,))
+          'WHERE id_to = %s);'
+    curs.execute(sql, (current_user.id,))
     result2 = curs.fetchall()
     conn.close()
     return render_template('friendlist.html', friends=result, requests=result2)
@@ -242,34 +242,34 @@ def all_item(nickname):
     """отображение всех желаний и списков пользователя"""
     conn = cn.get_connection()
     curs = conn.cursor()
-    user_id = None
+    id = None
     result = None
     if current_user.nickname == nickname:
-        user_id = current_user.user_id
-        sql = '''SELECT list_id AS id, title, user_id, 'list' AS types, 0 AS giver_id, NULL AS picture ''' \
+        id = current_user.id
+        sql = '''SELECT id AS id, title, id, 'list' AS types, 0 AS giver_id, NULL AS picture ''' \
               'FROM wishlist ' \
-              'WHERE user_id = %s ' \
+              'WHERE id = %s ' \
               'UNION ' \
-              '''SELECT item_id AS id, title, user_id, 'wish' AS types, giver_id, picture ''' \
+              '''SELECT item_id AS id, title, id, 'wish' AS types, giver_id, picture ''' \
               'FROM item JOIN user_item USING (item_id) ' \
-              'WHERE user_id = %s AND item_id NOT IN (SELECT item_id FROM item_list);'
-        curs.execute(sql, (user_id, user_id,))
+              'WHERE id = %s AND item_id NOT IN (SELECT item_id FROM item_list);'
+        curs.execute(sql, (id, id,))
         result = curs.fetchall()
     else:
         # только открытые списки
-        sql = 'SELECT user_id ' \
+        sql = 'SELECT id ' \
               'FROM users ' \
               'WHERE nickname = %s;'
         curs.execute(sql, (nickname,))
-        user_id = curs.fetchone()
-        sql = '''SELECT list_id AS id, title, user_id, 'list' AS types, 0 AS giver_id, NULL AS picture ''' \
+        id = curs.fetchone()
+        sql = '''SELECT id AS id, title, id, 'list' AS types, 0 AS giver_id, NULL AS picture ''' \
               'FROM wishlist ' \
-              'WHERE user_id = %s AND access_level = %s ' \
+              'WHERE id = %s AND access_level = %s ' \
               'UNION ' \
-              '''SELECT item_id AS id, title, user_id, 'wish' AS types, giver_id, picture ''' \
+              '''SELECT item_id AS id, title, id, 'wish' AS types, giver_id, picture ''' \
               'FROM item JOIN user_item  USING (item_id) ' \
-              'WHERE user_id = %s AND access_level = %s AND giver_id IS NULL AND item_id NOT IN (SELECT item_id FROM item_list);'
-        curs.execute(sql, (user_id["user_id"], True, user_id["user_id"], True,))
+              'WHERE id = %s AND access_level = %s AND giver_id IS NULL AND item_id NOT IN (SELECT item_id FROM item_list);'
+        curs.execute(sql, (id["id"], True, id["id"], True,))
         result = curs.fetchall()
     conn.close()
     return render_template('fullwish.html', wishes=result, nickname=nickname)
@@ -281,15 +281,15 @@ def presents():
     """отображение желаний, который будет исполнять пользователь"""
     conn = cn.get_connection()
     curs = conn.cursor()
-    sql = 'SELECT user_id ' \
+    sql = 'SELECT id ' \
           'FROM users ' \
           'WHERE nickname = %s;'
     curs.execute(sql, (current_user.nickname,))
-    user_id = curs.fetchone()
+    id = curs.fetchone()
     sql = 'SELECT item_id, title ' \
           'FROM item ' \
           'WHERE giver_id = %s;'
-    curs.execute(sql, (user_id["user_id"],))
+    curs.execute(sql, (id["id"],))
     result = curs.fetchall()
     conn.close()
     return render_template('my_presents.html', presents=result, nickname=current_user.nickname)
@@ -303,7 +303,7 @@ def wish_item(item_id):
     # все о wish
     sql = 'SELECT * ' \
           'FROM item ' \
-          'WHERE item_id = %s;'
+          'WHERE id = %s;'
     curs.execute(sql, (item_id,))
     result = curs.fetchone()
     sql = 'SELECT degree ' \
@@ -311,16 +311,16 @@ def wish_item(item_id):
           'WHERE degree_id IN (' \
           '     SELECT degree_id ' \
           '     FROM item_degree ' \
-          '     WHERE item_id = %s);'
+          '     WHERE id = %s);'
     curs.execute(sql, (result["item_id"],))
     result3 = curs.fetchone()
     # защита от несанкционированного доступа
     sql = 'SELECT nickname ' \
           'FROM users ' \
-          'WHERE user_id IN (' \
-          '     SELECT user_id ' \
+          'WHERE id IN (' \
+          '     SELECT id ' \
           '     FROM user_item ' \
-          '     WHERE item_id = %s);'
+          '     WHERE id = %s);'
     curs.execute(sql, (item_id,))
     result2 = curs.fetchone()
     conn.close()
@@ -330,23 +330,23 @@ def wish_item(item_id):
         return render_template('show_wish.html', wish=None, nickname=None, degree=None)
 
 
-@bp.route('/list/<list_id>')
-def wishlist_item(list_id):
+@bp.route('/list/<id>')
+def wishlist_item(id):
     """отображение конкретного списка"""
-    list_id = int(list_id)
+    id = int(id)
     conn = cn.get_connection()
     curs = conn.cursor()
     # информация о списке
     sql = 'SELECT * ' \
           'FROM wishlist ' \
-          'WHERE list_id = %s;'
-    curs.execute(sql, (list_id,))
+          'WHERE id = %s;'
+    curs.execute(sql, (id,))
     result = curs.fetchone()
     # все желания в данном списке
     sql = 'SELECT * ' \
           'FROM item ' \
-          'WHERE item_id IN (SELECT item_id FROM item_list WHERE list_id = %s)'
-    curs.execute(sql, (list_id,))
+          'WHERE id IN (SELECT item_id FROM item_list WHERE id = %s)'
+    curs.execute(sql, (id,))
     result2 = curs.fetchall()
     conn.close()
     return render_template('show_list.html', wishlist=result, wish_items=result2)
@@ -367,7 +367,7 @@ def add_wish(nickname):
         image_path = '../static/images/wishes/wish.jpg'  # картинка по умолчанию
         # связываем желание и его степень + ползователя и предмет; указываем путь к картинке
         sql = 'INSERT INTO item_degree (item_id, degree_id) VALUES (%s, %s);' \
-              'INSERT INTO user_item (user_id, item_id) VALUES ((SELECT user_id FROM users WHERE nickname = %s), %s);' \
+              'INSERT INTO user_item (id, item_id) VALUES ((SELECT id FROM users WHERE nickname = %s), %s);' \
               'UPDATE item SET picture = %s WHERE item_id = %s;'
         curs.execute(sql,
                      (result["item_id"], form.degree.data, nickname, result["item_id"], image_path, result["item_id"],))
@@ -388,19 +388,19 @@ def add_wishlist(nickname):
     curs = conn.cursor()
     sql = 'SELECT item_id , title ' \
           'FROM (item JOIN user_item USING (item_id)) AS o ' \
-          'WHERE user_id = %s AND giver_id IS NULL AND NOT EXISTS (SELECT * FROM item_list WHERE item_id = o.item_id);'
-    curs.execute(sql, (current_user.user_id,))
+          'WHERE id = %s AND giver_id IS NULL AND NOT EXISTS (SELECT * FROM item_list WHERE item_id = o.item_id);'
+    curs.execute(sql, (current_user.id,))
     form.wishes.choices = [(i["item_id"], i["title"]) for i in curs.fetchall()]
     if form.validate_on_submit():
         # заливаем список
-        sql = 'INSERT INTO wishlist (title, about, access_level, user_id) VALUES (%s, %s, %s, %s) RETURNING list_id;'
-        curs.execute(sql, (form.title.data, form.about.data, form.access_level.data, current_user.user_id,))
+        sql = 'INSERT INTO wishlist (title, about, access_level, id) VALUES (%s, %s, %s, %s) RETURNING id;'
+        curs.execute(sql, (form.title.data, form.about.data, form.access_level.data, current_user.id,))
         result = curs.fetchone()
         if len(form.wishes.data) > 0:
             # связываем список и желания в нем (если в список были добавлены желания)
-            sql = 'INSERT INTO item_list(list_id, item_id) VALUES (%s, %s);'
+            sql = 'INSERT INTO item_list(id, item_id) VALUES (%s, %s);'
             for item_id in form.wishes.data:
-                curs.execute(sql, (result["list_id"], item_id,))
+                curs.execute(sql, (result["id"], item_id,))
         conn.commit()
         conn.close()
         flash('New wish was added!')
@@ -449,19 +449,19 @@ def edit_wish(item_id):
     return render_template('edit_wish.html', form=form, title=form.title.data)
 
 
-@bp.route('/list/<list_id>/edit', methods=['GET', 'POST'])
+@bp.route('/list/<id>/edit', methods=['GET', 'POST'])
 @login_required
-def edit_wishlist(list_id):
+def edit_wishlist(id):
     """изменение данных желания"""
-    list_id = int(list_id)
+    id = int(id)
     form = EditWishListForm()
     # без choices SelectMultipleField не работает // желания, которые можно добавить в список
     conn = cn.get_connection()
     curs = conn.cursor()
     sql = 'SELECT item_id, title ' \
           'FROM item ' \
-          'WHERE giver_id IS NULL AND item_id NOT IN (SELECT item_id FROM item_list WHERE list_id = %s);'
-    curs.execute(sql, (list_id,))
+          'WHERE giver_id IS NULL AND item_id NOT IN (SELECT item_id FROM item_list WHERE id = %s);'
+    curs.execute(sql, (id,))
     result2 = curs.fetchall()
     if len(result2) > 0:
         form.wishes.choices = result2
@@ -471,17 +471,17 @@ def edit_wishlist(list_id):
         curs = conn.cursor()
         sql = 'UPDATE wishlist ' \
               'SET title = %s, about = %s, access_level = %s ' \
-              'WHERE list_id = %s;'
-        curs.execute(sql, (form.title.data, form.about.data, form.access_level.data, list_id,))
+              'WHERE id = %s;'
+        curs.execute(sql, (form.title.data, form.about.data, form.access_level.data, id,))
         # удалим неактуальную информацию о желаниях в списке
         sql = 'DELETE FROM item_list ' \
-              'WHERE list_id = %s'
-        curs.execute(sql, (list_id,))
+              'WHERE id = %s'
+        curs.execute(sql, (id,))
         if len(form.wishes.choices) > 0:
             # связываем список и желания в нем (если в списке есть желания)
-            sql = 'INSERT INTO item_list(list_id, item_id) VALUES (%s, %s);'
+            sql = 'INSERT INTO item_list(id, item_id) VALUES (%s, %s);'
             for item_id in form.wishes.data:
-                curs.execute(sql, (list_id, item_id,))
+                curs.execute(sql, (id, item_id,))
         conn.commit()
         conn.close()
         flash('Your changes have been saved.')
@@ -492,8 +492,8 @@ def edit_wishlist(list_id):
         # информация о списке
         sql = 'SELECT title, about, access_level ' \
               'FROM wishlist ' \
-              'WHERE list_id = %s;'
-        curs.execute(sql, (list_id,))
+              'WHERE id = %s;'
+        curs.execute(sql, (id,))
         result = curs.fetchone()
         conn.close()
         # если метод GET, то в формы записываем данные пользователя
@@ -511,8 +511,8 @@ def delete_wish(item_id):
     conn = cn.get_connection()
     curs = conn.cursor()
     sql = 'DELETE FROM item WHERE item_id = %s AND ' \
-          'item_id IN (SELECT item_id FROM user_item WHERE user_id = %s);'
-    curs.execute(sql, (item_id, current_user.user_id))
+          'item_id IN (SELECT item_id FROM user_item WHERE id = %s);'
+    curs.execute(sql, (item_id, current_user.id))
     result = curs.fetchall()
     conn.close()
     return render_template('add_wish.html', wish=result)
@@ -528,7 +528,7 @@ def make_wish(item_id):
     sql = 'UPDATE item ' \
           'SET giver_id = %s ' \
           'WHERE item_id = %s;'
-    curs.execute(sql, (current_user.user_id, item_id,))
+    curs.execute(sql, (current_user.id, item_id,))
     conn.commit()
     flash('You select a wish!')
     conn.close()
