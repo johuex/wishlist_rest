@@ -1,20 +1,17 @@
 """логика для web-страниц"""
-import io
 
-from flask import render_template, flash, redirect, url_for, request, make_response
-from app import app
-from app.forms import LoginForm, RegistrationForm, EditProfileForm, ChangePasswordForm, EditWishForm, AddWishForm, \
+from flask import render_template, flash, redirect, url_for, request
+from app.main.forms import EditProfileForm, EditWishForm, AddWishForm, \
     AddWishListForm, EditWishListForm
-from flask_login import current_user, login_user, logout_user, login_required
-from werkzeug.security import generate_password_hash
-from werkzeug.urls import url_parse
+from flask_login import current_user, login_required
 import connectDB as cn
 from app.models import User
 import datetime
+from app.main import bp
 
 
-@app.route('/')
-@app.route('/index')
+@bp.route('/')
+@bp.route('/index')
 def index():
     """главная страница"""
     '''тут будут последние 50 открытых желаний всех пользователей'''
@@ -37,76 +34,7 @@ def index():
     return render_template('index.html', wishes=result)
 
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    """функция авторизации"""
-    if current_user.is_authenticated:
-        return redirect(url_for('index'))  # во избежание повторной авторизации
-    form = LoginForm()
-    if form.validate_on_submit():
-        conn = cn.get_connection()
-        curs = conn.cursor()
-        sql = "SELECT * FROM users WHERE nickname = %s;"
-        curs.execute(sql, (form.nickname.data,))
-        result = curs.fetchone()
-        conn.close()
-        if result is None:
-            user = None
-        else:
-            user = User(result['user_id'], result['phone_number'], result['user_name'], result['surname'],
-                        result['userpic'],
-                        result['about'], result['birthday'], result['password_hash'], result['nickname'],
-                        result['email'], result["last_seen"])
-        if user is None or not user.check_password(form.password.data):
-            flash('Invalid username or password')
-            return redirect(url_for('login'))
-        login_user(user, remember=form.remember_me.data)
-        next_page = request.args.get('next')
-        if not next_page or url_parse(
-                next_page).netloc != '':  # перенаправление на след страницу, если не был авторизован
-            next_page = url_for('index')
-        return redirect(next_page)
-    return render_template('login.html', title='Sign In', form=form)
-
-
-@app.route('/logout')
-def logout():
-    """функция деавторизации"""
-    logout_user()
-    return redirect(url_for('index'))
-
-
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    """функция регистрации"""
-    if current_user.is_authenticated:
-        return redirect(url_for('index'))
-    form = RegistrationForm()
-    if form.validate_on_submit():
-        user = User(phone_number=form.phone_number.data, name=form.name.data, surname=form.surname.data,
-                    birthday=form.birthday.data, nickname=form.nickname.data, email=form.email.data)
-        user.set_password(form.password.data)
-        conn = cn.get_connection()
-        curs = conn.cursor()
-        sql = "INSERT INTO users (phone_number, user_name, surname, birthday, \
-        password_hash, nickname, email) VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING user_id;"
-        curs.execute(sql, (form.phone_number.data, form.name.data, form.surname.data,
-                           datetime.datetime.strptime(form.birthday.data, '%d/%m/%Y'),
-                           generate_password_hash(form.password.data), form.nickname.data, form.email.data,))
-        result = curs.fetchone()
-        image_path = 'static/images/users/userpic.png'  # фото по умолчанию
-        sql = 'UPDATE users ' \
-              'SET userpic = %s ' \
-              'WHERE user_id = %s;'
-        curs.execute(sql, (image_path, result["user_id"]))
-        conn.commit()
-        conn.close()
-        flash('Congratulations, you are now a registered user!')
-        return redirect(url_for('login'))
-    return render_template('register.html', title='Register', form=form)
-
-
-@app.before_request
+@bp.before_request
 def before_request():  # выполняется непосредственно перед функцией просмотра
     """при каждом запросе авторизованного пользователя записывается его последнее время активности"""
     if current_user.is_authenticated:
@@ -119,7 +47,7 @@ def before_request():  # выполняется непосредственно �
         conn.close()
 
 
-@app.route('/<nickname>')
+@bp.route('/<nickname>')
 @login_required
 def user_profile(nickname):
     """показ профиля пользователя"""
@@ -140,7 +68,7 @@ def user_profile(nickname):
     return render_template('user_profile.html', user=user)
 
 
-@app.route('/edit_profile', methods=['GET', 'POST'])
+@bp.route('/edit_profile', methods=['GET', 'POST'])
 @login_required
 def edit_profile():
     """изменение данных профиля"""
@@ -183,41 +111,7 @@ def edit_profile():
                            form=form)
 
 
-@app.route('/change_password', methods=['GET', 'POST'])
-@login_required
-def change_password():
-    """смена пароля"""
-    form = ChangePasswordForm()
-    if form.validate_on_submit():
-        current_user.set_password(form.newPassword1.data)
-        conn = cn.get_connection()
-        curs = conn.cursor()
-        sql = 'UPDATE users ' \
-              'SET password_hash = %s ' \
-              'WHERE nickname = %s;'
-        curs.execute(sql, (current_user.password_hash, current_user.nickname,))
-        conn.commit()
-        conn.close()
-        flash('Your changes have been saved.')
-        return redirect(url_for('change_password'))
-    return render_template('change_password.html', title='Changing Password',
-                           form=form)
-
-
-@app.errorhandler(404)  # рендер об ошибке 404
-def not_found_error(error):
-    """вывод ошибки 404"""
-    return render_template('404.html'), 404
-
-
-@app.errorhandler(500)  # рендер об ошибке 500
-def internal_error(error):
-    """вывод ошибки 500"""
-    # db.session.rollback() - ???
-    return render_template('500.html'), 500
-
-
-@app.route('/add_request/<nickname>')
+@bp.route('/add_request/<nickname>')
 @login_required
 def add_friend(nickname):
     """добавить пользователя в друзья (отправить запрос на дружбу)"""
@@ -235,7 +129,7 @@ def add_friend(nickname):
     return redirect(url_for('user_profile', nickname=nickname))
 
 
-@app.route('/delete_friend/<nickname>')
+@bp.route('/delete_friend/<nickname>')
 @login_required
 def delete_friend(nickname):
     """удалить пользователя из друзей"""
@@ -253,7 +147,7 @@ def delete_friend(nickname):
     return redirect(url_for('user_profile', nickname=nickname))
 
 
-@app.route('/cancel_request/<nickname>')
+@bp.route('/cancel_request/<nickname>')
 @login_required
 def cancel_request(nickname):
     """отменить запрос в друзья"""
@@ -271,7 +165,7 @@ def cancel_request(nickname):
     return redirect(url_for('user_profile', nickname=nickname))
 
 
-@app.route('/accept_request/<nickname>')
+@bp.route('/accept_request/<nickname>')
 @login_required
 def accept_request(nickname):
     """принять запрос в друзья"""
@@ -289,7 +183,7 @@ def accept_request(nickname):
     return redirect(url_for('user_profile', nickname=nickname))
 
 
-@app.route('/news')
+@bp.route('/news')
 @login_required
 def news():
     """новости от друзей"""
@@ -314,7 +208,7 @@ def news():
     return render_template('friend_news.html', wishes=result)
 
 
-@app.route('/friends')
+@bp.route('/friends')
 @login_required
 def friends():
     """отображение друзей пользователя"""
@@ -342,7 +236,7 @@ def friends():
     return render_template('friendlist.html', friends=result, requests=result2)
 
 
-@app.route('/<nickname>/wishes')
+@bp.route('/<nickname>/wishes')
 @login_required
 def all_item(nickname):
     """отображение всех желаний и списков пользователя"""
@@ -381,7 +275,7 @@ def all_item(nickname):
     return render_template('fullwish.html', wishes=result, nickname=nickname)
 
 
-@app.route('/presents')
+@bp.route('/presents')
 @login_required
 def presents():
     """отображение желаний, который будет исполнять пользователь"""
@@ -401,7 +295,7 @@ def presents():
     return render_template('my_presents.html', presents=result, nickname=current_user.nickname)
 
 
-@app.route('/wish/<item_id>')
+@bp.route('/wish/<item_id>')
 def wish_item(item_id):
     """отображение конкретного желания"""
     conn = cn.get_connection()
@@ -436,7 +330,7 @@ def wish_item(item_id):
         return render_template('show_wish.html', wish=None, nickname=None, degree=None)
 
 
-@app.route('/list/<list_id>')
+@bp.route('/list/<list_id>')
 def wishlist_item(list_id):
     """отображение конкретного списка"""
     list_id = int(list_id)
@@ -458,7 +352,7 @@ def wishlist_item(list_id):
     return render_template('show_list.html', wishlist=result, wish_items=result2)
 
 
-@app.route('/<nickname>/add_wish', methods=['GET', 'POST'])
+@bp.route('/<nickname>/add_wish', methods=['GET', 'POST'])
 @login_required
 def add_wish(nickname):
     """добавить желание"""
@@ -470,7 +364,7 @@ def add_wish(nickname):
         sql = 'INSERT INTO item (title, about, access_level, picture) VALUES (%s, %s, %s, %s) RETURNING item_id;'
         curs.execute(sql, (form.title.data, form.about.data, form.access_level.data, form.picture.data,))
         result = curs.fetchone()
-        image_path = '/static/images/wishes/wish.jpg'  # картинка по умолчанию
+        image_path = '../static/images/wishes/wish.jpg'  # картинка по умолчанию
         # связываем желание и его степень + ползователя и предмет; указываем путь к картинке
         sql = 'INSERT INTO item_degree (item_id, degree_id) VALUES (%s, %s);' \
               'INSERT INTO user_item (user_id, item_id) VALUES ((SELECT user_id FROM users WHERE nickname = %s), %s);' \
@@ -484,7 +378,7 @@ def add_wish(nickname):
     return render_template('add_wish.html', form=form)
 
 
-@app.route("/<nickname>/add_wishlist", methods=['GET', 'POST'])
+@bp.route("/<nickname>/add_wishlist", methods=['GET', 'POST'])
 @login_required
 def add_wishlist(nickname):
     """создать список желаний"""
@@ -515,7 +409,7 @@ def add_wishlist(nickname):
     return render_template('add_wishlist.html', form=form)
 
 
-@app.route('/wish/<item_id>/edit', methods=['GET', 'POST'])
+@bp.route('/wish/<item_id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit_wish(item_id):
     """изменение желания"""
@@ -555,7 +449,7 @@ def edit_wish(item_id):
     return render_template('edit_wish.html', form=form, title=form.title.data)
 
 
-@app.route('/list/<list_id>/edit', methods=['GET', 'POST'])
+@bp.route('/list/<list_id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit_wishlist(list_id):
     """изменение данных желания"""
@@ -609,7 +503,7 @@ def edit_wishlist(list_id):
     return render_template('edit_wishlist.html', form=form, title=form.title.data)
 
 
-@app.route('/<item_id>/delete')
+@bp.route('/<item_id>/delete')
 @login_required
 def delete_wish(item_id):
     """удалить желание"""
@@ -624,7 +518,7 @@ def delete_wish(item_id):
     return render_template('add_wish.html', wish=result)
 
 
-@app.route('/<item_id>/make_wish')
+@bp.route('/<item_id>/make_wish')
 @login_required
 def make_wish(item_id):
     """исполнить (зарезервировать) желание"""
@@ -641,7 +535,7 @@ def make_wish(item_id):
     return redirect(url_for('presents'))
 
 
-@app.route('/<item_id>/fullfiled')
+@bp.route('/<item_id>/fullfiled')
 @login_required
 def wish_fullfiled(item_id):
     """пользователь-владелец отмечает, что зарезервированное ранее желание исполнено.
